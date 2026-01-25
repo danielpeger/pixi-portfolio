@@ -54,7 +54,10 @@ export default function Home() {
         .circle(0, 0, circleRadius)
         .fill("0xffcc00");
       circle.x = 30 + circleRadius;
-      circle.y = 60 + circleRadius;
+      circle.y = 40 + circleRadius;
+      let circleSquash = 0;
+      let circleSquashNX = 1;
+      let circleSquashNY = 0;
 
       let velocityX = 0;
       let velocityY = 0;
@@ -147,17 +150,20 @@ export default function Home() {
 
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
-        const damping = 0.97;
+        const damping = 0.968;
         const bounce = 1.07;
-        const textDamping = 0.97;
+        const textDamping = 0.968;
         const textBounce = 1.07;
         const maxVelocity = 40;
         const circleMass = 1;
-        const textSpring = 0.01;
+        const textSpring = 0.008;
+        const squashDecay = 0.75;
+        const circleSquashMax = 10;
+        const stretchFactor = 1;
 
         if (!gyroEnabled) {
-          tiltX = 0.25;
-          tiltY = 0.5;
+          tiltX = 0.15;
+          tiltY = 0.55;
         }
 
         velocityX = (velocityX + tiltX * delta) * damping;
@@ -174,17 +180,41 @@ export default function Home() {
         if (circle.x < circleRadius) {
           circle.x = circleRadius;
           velocityX = Math.abs(velocityX) * bounce;
+          circleSquash = Math.max(
+            circleSquash,
+            Math.min(circleSquashMax, Math.abs(velocityX) * 0.009),
+          );
+          circleSquashNX = 1;
+          circleSquashNY = 0;
         } else if (circle.x > maxX) {
           circle.x = maxX;
           velocityX = -Math.abs(velocityX) * bounce;
+          circleSquash = Math.max(
+            circleSquash,
+            Math.min(circleSquashMax, Math.abs(velocityX) * 0.009),
+          );
+          circleSquashNX = -1;
+          circleSquashNY = 0;
         }
 
         if (circle.y < circleRadius) {
           circle.y = circleRadius;
           velocityY = Math.abs(velocityY) * bounce;
+          circleSquash = Math.max(
+            circleSquash,
+            Math.min(circleSquashMax, Math.abs(velocityY) * 0.009),
+          );
+          circleSquashNX = 0;
+          circleSquashNY = 1;
         } else if (circle.y > maxY) {
           circle.y = maxY;
           velocityY = -Math.abs(velocityY) * bounce;
+          circleSquash = Math.max(
+            circleSquash,
+            Math.min(circleSquashMax, Math.abs(velocityY) * 0.009),
+          );
+          circleSquashNX = 0;
+          circleSquashNY = -1;
         }
 
         for (const body of textBodies) {
@@ -242,6 +272,14 @@ export default function Home() {
               velocityY += (impulse / circleMass) * ny;
               body.vx -= (impulse / body.mass) * nx;
               body.vy -= (impulse / body.mass) * ny;
+
+              const impact = Math.min(
+                circleSquashMax,
+                Math.abs(velAlongNormal) * 0.009,
+              );
+              circleSquash = Math.max(circleSquash, impact);
+              circleSquashNX = nx;
+              circleSquashNY = ny;
             }
           }
 
@@ -314,10 +352,26 @@ export default function Home() {
                 a.vy += (impulse / a.mass) * ny;
                 b.vx -= (impulse / b.mass) * nx;
                 b.vy -= (impulse / b.mass) * ny;
+
               }
             }
           }
         }
+
+        if (circleSquash > 0.0001) {
+          circleSquash *= squashDecay;
+        } else {
+          circleSquash = 0;
+        }
+
+        const circleAxisX = Math.abs(circleSquashNX);
+        const circleAxisY = Math.abs(circleSquashNY);
+        if (circleAxisX >= circleAxisY) {
+          circle.scale.set(1 - circleSquash, 1 + circleSquash * stretchFactor);
+        } else {
+          circle.scale.set(1 + circleSquash * stretchFactor, 1 - circleSquash);
+        }
+
       });
     };
 
