@@ -49,7 +49,7 @@ export default function Home() {
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
       });
 
-      const circleRadius = 100;
+      const circleRadius = 65;
       const circle = new Graphics()
         .circle(0, 0, circleRadius)
         .fill("0xffcc00");
@@ -136,20 +136,20 @@ export default function Home() {
       dani.y = 484;
 
       const textBodies = [
-        { sprite: hello, vx: 0, vy: 0, mass: 5, targetX: hello.x, targetY: hello.y },
-        { sprite: friend, vx: 0, vy: 0, mass: 5, targetX: friend.x, targetY: friend.y },
-        { sprite: im, vx: 0, vy: 0, mass: 5, targetX: im.x, targetY: im.y },
-        { sprite: dani, vx: 0, vy: 0, mass: 5, targetX: dani.x, targetY: dani.y },
+        { sprite: hello, vx: 0, vy: 0, mass: 7, targetX: hello.x, targetY: hello.y },
+        { sprite: friend, vx: 0, vy: 0, mass: 7, targetX: friend.x, targetY: friend.y },
+        { sprite: im, vx: 0, vy: 0, mass: 7, targetX: im.x, targetY: im.y },
+        { sprite: dani, vx: 0, vy: 0, mass: 7, targetX: dani.x, targetY: dani.y },
       ];
 
       app.stage.addChild(circle, hello, friend, im, dani);
 
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
-        const damping = 0.95;
-        const bounce = 1.2;
-        const textDamping = 0.95;
-        const textBounce = 1.2;
+        const damping = 0.97;
+        const bounce = 1.07;
+        const textDamping = 0.97;
+        const textBounce = 1.07;
         const maxVelocity = 40;
         const circleMass = 1;
         const textSpring = 0.01;
