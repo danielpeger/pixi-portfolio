@@ -135,13 +135,24 @@ export default function Home() {
       dani.x = 242;
       dani.y = 484;
 
+      const textBodies = [
+        { sprite: hello, vx: 0, vy: 0, mass: 10, targetX: hello.x, targetY: hello.y },
+        { sprite: friend, vx: 0, vy: 0, mass: 10, targetX: friend.x, targetY: friend.y },
+        { sprite: im, vx: 0, vy: 0, mass: 10, targetX: im.x, targetY: im.y },
+        { sprite: dani, vx: 0, vy: 0, mass: 10, targetX: dani.x, targetY: dani.y },
+      ];
+
       app.stage.addChild(circle, hello, friend, im, dani);
 
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
-        const damping = 0.96;
-        const bounce = 0.9;
+        const damping = 0.95;
+        const bounce = 1;
+        const textDamping = 0.95;
+        const textBounce = 1;
         const maxVelocity = 40;
+        const circleMass = 1;
+        const textSpring = 0.01;
 
         velocityX = (velocityX + tiltX * delta) * damping;
         velocityY = (velocityY + tiltY * delta) * damping;
@@ -168,6 +179,138 @@ export default function Home() {
         } else if (circle.y > maxY) {
           circle.y = maxY;
           velocityY = -Math.abs(velocityY) * bounce;
+        }
+
+        for (const body of textBodies) {
+          const text = body.sprite;
+          const rectLeft = text.x;
+          const rectTop = text.y;
+          const rectRight = text.x + text.width;
+          const rectBottom = text.y + text.height;
+
+          const nearestX = Math.max(rectLeft, Math.min(circle.x, rectRight));
+          const nearestY = Math.max(rectTop, Math.min(circle.y, rectBottom));
+
+          const diffX = circle.x - nearestX;
+          const diffY = circle.y - nearestY;
+          const distSq = diffX * diffX + diffY * diffY;
+
+          if (distSq < circleRadius * circleRadius) {
+            const dist = Math.max(0.0001, Math.sqrt(distSq));
+            const normalX =
+              distSq === 0
+                ? circle.x - (rectLeft + text.width / 2)
+                : diffX / dist;
+            const normalY =
+              distSq === 0
+                ? circle.y - (rectTop + text.height / 2)
+                : diffY / dist;
+            const normalLength = Math.max(
+              0.0001,
+              Math.sqrt(normalX * normalX + normalY * normalY),
+            );
+            const nx = normalX / normalLength;
+            const ny = normalY / normalLength;
+
+            const overlap = circleRadius - dist;
+            const totalMass = circleMass + body.mass;
+            const circleMove = overlap * (body.mass / totalMass);
+            const textMove = overlap * (circleMass / totalMass);
+
+            circle.x += nx * circleMove;
+            circle.y += ny * circleMove;
+            text.x -= nx * textMove;
+            text.y -= ny * textMove;
+
+            const relVelX = velocityX - body.vx;
+            const relVelY = velocityY - body.vy;
+            const velAlongNormal = relVelX * nx + relVelY * ny;
+
+            if (velAlongNormal < 0) {
+              const restitution = textBounce;
+              const impulse =
+                (-(1 + restitution) * velAlongNormal) /
+                (1 / circleMass + 1 / body.mass);
+
+              velocityX += (impulse / circleMass) * nx;
+              velocityY += (impulse / circleMass) * ny;
+              body.vx -= (impulse / body.mass) * nx;
+              body.vy -= (impulse / body.mass) * ny;
+            }
+          }
+
+          body.vx += (body.targetX - text.x) * textSpring * delta;
+          body.vy += (body.targetY - text.y) * textSpring * delta;
+          body.vx *= textDamping;
+          body.vy *= textDamping;
+          text.x += body.vx * delta;
+          text.y += body.vy * delta;
+        }
+
+        for (let i = 0; i < textBodies.length; i += 1) {
+          for (let j = i + 1; j < textBodies.length; j += 1) {
+            const a = textBodies[i];
+            const b = textBodies[j];
+            const aSprite = a.sprite;
+            const bSprite = b.sprite;
+
+            const aLeft = aSprite.x;
+            const aTop = aSprite.y;
+            const aRight = aSprite.x + aSprite.width;
+            const aBottom = aSprite.y + aSprite.height;
+
+            const bLeft = bSprite.x;
+            const bTop = bSprite.y;
+            const bRight = bSprite.x + bSprite.width;
+            const bBottom = bSprite.y + bSprite.height;
+
+            const overlapX = Math.min(aRight, bRight) - Math.max(aLeft, bLeft);
+            const overlapY = Math.min(aBottom, bBottom) - Math.max(aTop, bTop);
+
+            if (overlapX > 0 && overlapY > 0) {
+              const aCenterX = aLeft + aSprite.width / 2;
+              const aCenterY = aTop + aSprite.height / 2;
+              const bCenterX = bLeft + bSprite.width / 2;
+              const bCenterY = bTop + bSprite.height / 2;
+
+              let nx = 0;
+              let ny = 0;
+              let separation = 0;
+
+              if (overlapX < overlapY) {
+                separation = overlapX;
+                nx = aCenterX < bCenterX ? -1 : 1;
+              } else {
+                separation = overlapY;
+                ny = aCenterY < bCenterY ? -1 : 1;
+              }
+
+              const totalMass = a.mass + b.mass;
+              const aMove = separation * (b.mass / totalMass);
+              const bMove = separation * (a.mass / totalMass);
+
+              aSprite.x += nx * aMove;
+              aSprite.y += ny * aMove;
+              bSprite.x -= nx * bMove;
+              bSprite.y -= ny * bMove;
+
+              const relVelX = a.vx - b.vx;
+              const relVelY = a.vy - b.vy;
+              const velAlongNormal = relVelX * nx + relVelY * ny;
+
+              if (velAlongNormal < 0) {
+                const restitution = 0.35;
+                const impulse =
+                  (-(1 + restitution) * velAlongNormal) /
+                  (1 / a.mass + 1 / b.mass);
+
+                a.vx += (impulse / a.mass) * nx;
+                a.vy += (impulse / a.mass) * ny;
+                b.vx -= (impulse / b.mass) * nx;
+                b.vy -= (impulse / b.mass) * ny;
+              }
+            }
+          }
         }
       });
     };
