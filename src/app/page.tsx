@@ -8,7 +8,8 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const app = new Application();
 
@@ -16,46 +17,72 @@ export default function Home() {
 
     const init = async () => {
       await app.init({
-        resizeTo: window,
+        resizeTo: container,
         backgroundColor: 0xffffff,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
       });
+
+      app.renderer.events.autoPreventDefault = false;
+      app.canvas.style.touchAction = "auto";
 
       if (!isMounted) {
         app.destroy(true);
         return;
       }
 
-      containerRef.current?.appendChild(app.canvas);
+      container.appendChild(app.canvas);
+      app.canvas.style.display = "block";
+      app.canvas.style.width = "100%";
+      app.canvas.style.height = "100%";
+
+      if (document.fonts) {
+        await document.fonts.load('400 70px "Jua"');
+      }
+
+      const textStyle = new TextStyle({
+        fill: 0x000000,
+        fontSize: 70,
+        fontWeight: "400",
+        fontFamily: '"Jua", Arial, Helvetica, sans-serif',
+      });
 
       const hello = new Text({
         text: "Hello",
-        style: new TextStyle({
-          fill: 0x000000,
-          fontSize: 120,
-          fontWeight: "700",
-          fontFamily: "Arial, Helvetica, sans-serif",
-        }),
+        style: textStyle,
       });
 
       const friend = new Text({
-        text: "friend",
-        style: new TextStyle({
-          fill: 0x000000,
-          fontSize: 120,
-          fontWeight: "700",
-          fontFamily: "Arial, Helvetica, sans-serif",
-        }),
+        text: "friend,",
+        style: textStyle,
       });
 
-      hello.x = 64;
-      hello.y = 96;
 
-      friend.x = 64;
-      friend.y = hello.y + hello.height + 24;
+      const im = new Text({
+        text: "I'm",
+        style: textStyle,
+      });
 
-      app.stage.addChild(hello, friend);
+      const dani = new Text({
+        text: "Dani",
+        style: textStyle,
+      });
+
+      hello.x = 20;
+      hello.y = 330;
+      hello.rotation = (-10 * Math.PI) / 180;
+
+      friend.x = 170;
+      friend.y = 393;
+      friend.rotation = (3 * Math.PI) / 180;
+
+      im.x = 47;
+      im.y = 470;
+
+      dani.x = 242;
+      dani.y = 484;
+
+      app.stage.addChild(hello, friend, im, dani);
     };
 
     init();
@@ -66,5 +93,12 @@ export default function Home() {
     };
   }, []);
 
-  return <div ref={containerRef} className="h-screen w-screen" />;
+  return (
+    <main>
+      <div ref={containerRef} className="h-[80vh] w-screen" />
+      <section className="mx-8">
+      <p>a Budapest-based design engineer striving to improve human lives through software.</p>
+      </section>
+    </main>
+  );
 }
