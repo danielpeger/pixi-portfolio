@@ -136,10 +136,10 @@ export default function Home() {
       dani.y = 484;
 
       const textBodies = [
-        { sprite: hello, vx: 0, vy: 0, mass: 10, targetX: hello.x, targetY: hello.y },
-        { sprite: friend, vx: 0, vy: 0, mass: 10, targetX: friend.x, targetY: friend.y },
-        { sprite: im, vx: 0, vy: 0, mass: 10, targetX: im.x, targetY: im.y },
-        { sprite: dani, vx: 0, vy: 0, mass: 10, targetX: dani.x, targetY: dani.y },
+        { sprite: hello, vx: 0, vy: 0, mass: 5, targetX: hello.x, targetY: hello.y },
+        { sprite: friend, vx: 0, vy: 0, mass: 5, targetX: friend.x, targetY: friend.y },
+        { sprite: im, vx: 0, vy: 0, mass: 5, targetX: im.x, targetY: im.y },
+        { sprite: dani, vx: 0, vy: 0, mass: 5, targetX: dani.x, targetY: dani.y },
       ];
 
       app.stage.addChild(circle, hello, friend, im, dani);
@@ -147,9 +147,9 @@ export default function Home() {
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
         const damping = 0.95;
-        const bounce = 1;
+        const bounce = 1.2;
         const textDamping = 0.95;
-        const textBounce = 1;
+        const textBounce = 1.2;
         const maxVelocity = 40;
         const circleMass = 1;
         const textSpring = 0.01;
