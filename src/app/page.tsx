@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Application, Graphics, Text, TextStyle } from "pixi.js";
+import { Application, Assets, Graphics, Sprite, Text, TextStyle } from "pixi.js";
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -58,6 +58,41 @@ export default function Home() {
       let circleSquash = 0;
       let circleSquashNX = 1;
       let circleSquashNY = 0;
+      const handTargetSize = circleRadius * 0.5;
+      const handRasterScale = Math.max(2, Math.ceil(handTargetSize / 25));
+      const handTexture = await Assets.load({
+        src: "/hand.svg",
+        data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
+      });
+      const hand = new Sprite(handTexture);
+      const handSize = handTargetSize;
+      hand.anchor.set(0.4);
+      hand.scale.set(handSize / hand.texture.height);
+      hand.alpha = 0;
+      hand.x = circle.x;
+      hand.y = circle.y;
+      let handFadeElapsed = 0;
+      const handFadeDelay = 3;
+      const handFadeDuration = 1;
+      const rotateTargetSize = circleRadius * 0.5;
+      const rotateRasterScale = Math.max(2, Math.ceil(rotateTargetSize / 28));
+      const rotateTexture = await Assets.load({
+        src: "/rotate-device.svg",
+        data: { scale: rotateRasterScale, resolution: window.devicePixelRatio || 1 },
+      });
+      const rotate = new Sprite(rotateTexture);
+      rotate.anchor.set(0.5);
+      rotate.scale.set(rotateTargetSize / rotate.texture.height);
+      rotate.alpha = 0;
+      rotate.x = circle.x;
+      rotate.y = circle.y;
+      let handFadeStartAlpha = 0;
+      let gyroHintElapsed = 0;
+      let gyroHintActive = false;
+      const gyroHintMaxAlpha = 0.1;
+      const gyroCrossfadeDuration = 0.6;
+      const gyroDisplayDuration = 4;
+      const gyroFadeOutDuration = 0.8;
 
       let velocityX = 0;
       let velocityY = 0;
@@ -90,6 +125,9 @@ export default function Home() {
         }
         window.addEventListener("deviceorientation", handleOrientation);
         gyroEnabled = true;
+        gyroHintElapsed = 0;
+        gyroHintActive = true;
+        handFadeStartAlpha = hand.alpha;
       };
 
       enableGyroOnPointer = async () => {
@@ -98,7 +136,10 @@ export default function Home() {
         app.canvas.removeEventListener("touchend", enableGyroOnPointer);
       };
       const hasDeviceOrientation = typeof DeviceOrientationEvent !== "undefined";
-      if (hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent) {
+      const needsTapToEnable =
+        hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent;
+      hand.visible = needsTapToEnable;
+      if (needsTapToEnable) {
         app.canvas.addEventListener("click", enableGyroOnPointer);
         app.canvas.addEventListener("touchend", enableGyroOnPointer);
       } else {
@@ -146,7 +187,7 @@ export default function Home() {
         { sprite: dani, vx: 0, vy: 0, mass: 7, targetX: dani.x, targetY: dani.y },
       ];
 
-      app.stage.addChild(circle, hello, friend, im, dani);
+      app.stage.addChild(circle, hand, rotate, hello, friend, im, dani);
 
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
@@ -163,7 +204,52 @@ export default function Home() {
 
         if (!gyroEnabled) {
           tiltX = 0.15;
-          tiltY = 0.55;
+          tiltY = 0.5;
+        }
+        const handShouldFadeIn = !gyroEnabled && needsTapToEnable;
+        if (handShouldFadeIn) {
+          handFadeElapsed += ticker.deltaMS / 1000;
+        }
+        const fadeProgress = Math.min(
+          1,
+          Math.max(0, (handFadeElapsed - handFadeDelay) / handFadeDuration),
+        );
+        const idleHandAlpha = handShouldFadeIn ? 0.1 * fadeProgress : 0;
+
+        if (gyroHintActive) {
+          gyroHintElapsed += ticker.deltaMS / 1000;
+          const crossfadeEnd = gyroCrossfadeDuration;
+          const displayEnd = crossfadeEnd + gyroDisplayDuration;
+          const fadeOutEnd = displayEnd + gyroFadeOutDuration;
+
+          if (gyroHintElapsed <= crossfadeEnd) {
+            const t = gyroHintElapsed / gyroCrossfadeDuration;
+            hand.alpha = handFadeStartAlpha * (1 - t);
+            rotate.alpha = gyroHintMaxAlpha * t;
+          } else if (gyroHintElapsed <= displayEnd) {
+            hand.alpha = 0;
+            rotate.alpha = gyroHintMaxAlpha;
+          } else if (gyroHintElapsed <= fadeOutEnd) {
+            const t = (gyroHintElapsed - displayEnd) / gyroFadeOutDuration;
+            hand.alpha = 0;
+            rotate.alpha = gyroHintMaxAlpha * (1 - t);
+          } else {
+            hand.alpha = 0;
+            rotate.alpha = 0;
+            gyroHintActive = false;
+          }
+        } else {
+          hand.alpha = idleHandAlpha;
+          rotate.alpha = 0;
+        }
+
+        hand.visible = handShouldFadeIn || gyroHintActive;
+        rotate.visible = gyroHintActive;
+        if (hand.visible || rotate.visible) {
+          hand.x = circle.x;
+          hand.y = circle.y;
+          rotate.x = circle.x;
+          rotate.y = circle.y;
         }
 
         velocityX = (velocityX + tiltX * delta) * damping;
@@ -390,7 +476,7 @@ export default function Home() {
     <main>
       <div ref={containerRef} className="h-[80vh] w-screen" />
       <section className="mx-8">
-      <p>a Budapest-based design engineer striving to improve human lives through software.</p>
+      <p>a Budapest-based design engineer trying to put the soft back in software.</p>
       </section>
     </main>
   );
