@@ -91,7 +91,7 @@ export default function Home() {
       let gyroHintActive = false;
       const gyroHintMaxAlpha = 0.1;
       const gyroCrossfadeDuration = 0.6;
-      const gyroDisplayDuration = 4;
+      const gyroDisplayDuration = 3;
       const gyroFadeOutDuration = 0.8;
 
       let velocityX = 0;
