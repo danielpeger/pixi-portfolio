@@ -53,8 +53,8 @@ export default function Home() {
       const circle = new Graphics()
         .circle(0, 0, circleRadius)
         .fill("0xffcc00");
-      circle.x = 60 + circleRadius;
-      circle.y = 90 + circleRadius;
+      circle.x = 30 + circleRadius;
+      circle.y = 60 + circleRadius;
 
       let velocityX = 0;
       let velocityY = 0;
@@ -68,6 +68,7 @@ export default function Home() {
       };
 
       let gyroEnabled = false;
+      let introTiltProgress = 1;
       const enableGyro = async () => {
         if (typeof DeviceOrientationEvent === "undefined") return;
         if (gyroEnabled) return;
@@ -153,6 +154,11 @@ export default function Home() {
         const maxVelocity = 40;
         const circleMass = 1;
         const textSpring = 0.01;
+
+        if (!gyroEnabled) {
+          tiltX = 0.25;
+          tiltY = 0.5;
+        }
 
         velocityX = (velocityX + tiltX * delta) * damping;
         velocityY = (velocityY + tiltY * delta) * damping;
