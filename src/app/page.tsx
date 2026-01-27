@@ -53,12 +53,13 @@ export default function Home() {
       const circle = new Graphics()
         .circle(0, 0, circleRadius)
         .fill("0xffcc00");
-      circle.x = 30 + circleRadius;
-      circle.y = 40 + circleRadius;
-      let circleSquash = 0;
-      let circleSquashNX = 1;
-      let circleSquashNY = 0;
-      const handTargetSize = circleRadius * 0.5;
+      circle.x = 20 + circleRadius;
+      circle.y = 16 + circleRadius;
+      let circleSquashX = 0;
+      let circleSquashY = 0;
+      let circleSquashTargetX = 0;
+      let circleSquashTargetY = 0;
+      const handTargetSize = 24;
       const handRasterScale = Math.max(2, Math.ceil(handTargetSize / 25));
       const handTexture = await Assets.load({
         src: "/hand.svg",
@@ -69,16 +70,16 @@ export default function Home() {
       hand.anchor.set(0);
       hand.scale.set(handSize / hand.texture.height);
       hand.alpha = 0;
-      hand.x = 16;
-      hand.y = 16;
+      hand.x = 28;
+      hand.y = 31;
       let handFadeElapsed = 0;
-      const handFadeDelay = 3;
+      const handFadeDelay = 1;
       const handFadeDuration = 1;
       const handLabel = new Text({
         text: "Tap to enable gyroscope",
         style: new TextStyle({
-          fill: 0x8a8a8e,
-          fontSize: 12,
+          fill: 0xc3c3c8,
+          fontSize: 20,
           fontWeight: "400",
           fontFamily:
             '"SF Pro Rounded", "SF Rounded", -apple-system, system-ui, sans-serif',
@@ -86,7 +87,7 @@ export default function Home() {
       });
       handLabel.alpha = 0;
       handLabel.x = hand.x + hand.width + 8;
-      handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
+      handLabel.y = hand.y - 2 + (hand.height - handLabel.height) / 2;
 
       let velocityX = 0;
       let velocityY = 0;
@@ -106,7 +107,6 @@ export default function Home() {
       };
 
       let gyroEnabled = false;
-      let introTiltProgress = 1;
       const enableGyro = async () => {
         if (typeof DeviceOrientationEvent === "undefined") return;
         if (gyroEnabled) return;
@@ -197,9 +197,11 @@ export default function Home() {
         const maxVelocity = 40;
         const circleMass = 1;
         const textSpring = 0.008;
-        const squashDecay = 0.75;
-        const circleSquashMax = 10;
-        const stretchFactor = 1;
+        const squashDecay = 0.5;
+        const squashRise = 0.13;
+        const circleSquashMax = 2;
+        const circleSquashVelocityScale = 0.09;
+        const stretchFactor = 1.4;
 
         if (!gyroEnabled) {
           tiltX = 0.15;
@@ -213,15 +215,12 @@ export default function Home() {
           1,
           Math.max(0, (handFadeElapsed - handFadeDelay) / handFadeDuration),
         );
-        const idleHandAlpha = handShouldFadeIn ? 0.1 * fadeProgress : 0;
-        hand.alpha = idleHandAlpha;
+        const handAlpha = handShouldFadeIn ? fadeProgress : 0;
+        const labelAlpha = handShouldFadeIn ? fadeProgress : 0;
+        hand.alpha = handAlpha;
         hand.visible = handShouldFadeIn;
-        handLabel.alpha = idleHandAlpha;
+        handLabel.alpha = labelAlpha;
         handLabel.visible = handShouldFadeIn;
-        if (handShouldFadeIn) {
-          handLabel.x = hand.x + hand.width + 8;
-          handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
-        }
 
         velocityX = (velocityX + tiltX * delta) * damping;
         velocityY = (velocityY + tiltY * delta) * damping;
@@ -237,41 +236,33 @@ export default function Home() {
         if (circle.x < circleRadius) {
           circle.x = circleRadius;
           velocityX = Math.abs(velocityX) * bounce;
-          circleSquash = Math.max(
-            circleSquash,
-            Math.min(circleSquashMax, Math.abs(velocityX) * 0.009),
+          circleSquashTargetX = Math.max(
+            circleSquashTargetX,
+            Math.min(circleSquashMax, Math.abs(velocityX) * circleSquashVelocityScale),
           );
-          circleSquashNX = 1;
-          circleSquashNY = 0;
         } else if (circle.x > maxX) {
           circle.x = maxX;
           velocityX = -Math.abs(velocityX) * bounce;
-          circleSquash = Math.max(
-            circleSquash,
-            Math.min(circleSquashMax, Math.abs(velocityX) * 0.009),
+          circleSquashTargetX = Math.max(
+            circleSquashTargetX,
+            Math.min(circleSquashMax, Math.abs(velocityX) * circleSquashVelocityScale),
           );
-          circleSquashNX = -1;
-          circleSquashNY = 0;
         }
 
         if (circle.y < circleRadius) {
           circle.y = circleRadius;
           velocityY = Math.abs(velocityY) * bounce;
-          circleSquash = Math.max(
-            circleSquash,
-            Math.min(circleSquashMax, Math.abs(velocityY) * 0.009),
+          circleSquashTargetY = Math.max(
+            circleSquashTargetY,
+            Math.min(circleSquashMax, Math.abs(velocityY) * circleSquashVelocityScale),
           );
-          circleSquashNX = 0;
-          circleSquashNY = 1;
         } else if (circle.y > maxY) {
           circle.y = maxY;
           velocityY = -Math.abs(velocityY) * bounce;
-          circleSquash = Math.max(
-            circleSquash,
-            Math.min(circleSquashMax, Math.abs(velocityY) * 0.009),
+          circleSquashTargetY = Math.max(
+            circleSquashTargetY,
+            Math.min(circleSquashMax, Math.abs(velocityY) * circleSquashVelocityScale),
           );
-          circleSquashNX = 0;
-          circleSquashNY = -1;
         }
 
         for (const body of textBodies) {
@@ -332,11 +323,16 @@ export default function Home() {
 
               const impact = Math.min(
                 circleSquashMax,
-                Math.abs(velAlongNormal) * 0.009,
+                Math.abs(velAlongNormal) * circleSquashVelocityScale,
               );
-              circleSquash = Math.max(circleSquash, impact);
-              circleSquashNX = nx;
-              circleSquashNY = ny;
+              circleSquashTargetX = Math.max(
+                circleSquashTargetX,
+                impact * Math.abs(nx),
+              );
+              circleSquashTargetY = Math.max(
+                circleSquashTargetY,
+                impact * Math.abs(ny),
+              );
             }
           }
 
@@ -415,19 +411,23 @@ export default function Home() {
           }
         }
 
-        if (circleSquash > 0.0001) {
-          circleSquash *= squashDecay;
+        if (circleSquashTargetX > 0.0001) {
+          circleSquashTargetX *= squashDecay;
         } else {
-          circleSquash = 0;
+          circleSquashTargetX = 0;
         }
+        if (circleSquashTargetY > 0.0001) {
+          circleSquashTargetY *= squashDecay;
+        } else {
+          circleSquashTargetY = 0;
+        }
+        circleSquashX += (circleSquashTargetX - circleSquashX) * squashRise;
+        circleSquashY += (circleSquashTargetY - circleSquashY) * squashRise;
 
-        const circleAxisX = Math.abs(circleSquashNX);
-        const circleAxisY = Math.abs(circleSquashNY);
-        if (circleAxisX >= circleAxisY) {
-          circle.scale.set(1 - circleSquash, 1 + circleSquash * stretchFactor);
-        } else {
-          circle.scale.set(1 + circleSquash * stretchFactor, 1 - circleSquash);
-        }
+        circle.scale.set(
+          1 - circleSquashX + circleSquashY * stretchFactor,
+          1 - circleSquashY + circleSquashX * stretchFactor,
+        );
 
       });
     };
