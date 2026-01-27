@@ -66,43 +66,43 @@ export default function Home() {
       });
       const hand = new Sprite(handTexture);
       const handSize = handTargetSize;
-      hand.anchor.set(0.4);
+      hand.anchor.set(0);
       hand.scale.set(handSize / hand.texture.height);
       hand.alpha = 0;
-      hand.x = circle.x;
-      hand.y = circle.y;
+      hand.x = 16;
+      hand.y = 16;
       let handFadeElapsed = 0;
       const handFadeDelay = 3;
       const handFadeDuration = 1;
-      const rotateTargetSize = circleRadius * 0.5;
-      const rotateRasterScale = Math.max(2, Math.ceil(rotateTargetSize / 28));
-      const rotateTexture = await Assets.load({
-        src: "/rotate-device.svg",
-        data: { scale: rotateRasterScale, resolution: window.devicePixelRatio || 1 },
+      const handLabel = new Text({
+        text: "Tap to enable gyroscope",
+        style: new TextStyle({
+          fill: 0x8a8a8e,
+          fontSize: 12,
+          fontWeight: "400",
+          fontFamily:
+            '"SF Pro Rounded", "SF Rounded", -apple-system, system-ui, sans-serif',
+        }),
       });
-      const rotate = new Sprite(rotateTexture);
-      rotate.anchor.set(0.5);
-      rotate.scale.set(rotateTargetSize / rotate.texture.height);
-      rotate.alpha = 0;
-      rotate.x = circle.x;
-      rotate.y = circle.y;
-      let handFadeStartAlpha = 0;
-      let gyroHintElapsed = 0;
-      let gyroHintActive = false;
-      const gyroHintMaxAlpha = 0.1;
-      const gyroCrossfadeDuration = 0.6;
-      const gyroDisplayDuration = 3;
-      const gyroFadeOutDuration = 0.8;
+      handLabel.alpha = 0;
+      handLabel.x = hand.x + hand.width + 8;
+      handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
 
       let velocityX = 0;
       let velocityY = 0;
       let tiltX = 0;
       let tiltY = 0;
+      let baseGamma: number | null = null;
+      let baseBeta: number | null = null;
 
       handleOrientation = (event: DeviceOrientationEvent) => {
         if (event.gamma == null || event.beta == null) return;
-        tiltX = event.gamma * 0.04;
-        tiltY = event.beta * 0.04;
+        if (baseGamma == null || baseBeta == null) {
+          baseGamma = event.gamma;
+          baseBeta = event.beta;
+        }
+        tiltX = (event.gamma - baseGamma) * 0.04;
+        tiltY = (event.beta - baseBeta) * 0.04;
       };
 
       let gyroEnabled = false;
@@ -123,11 +123,10 @@ export default function Home() {
             return;
           }
         }
+        baseGamma = null;
+        baseBeta = null;
         window.addEventListener("deviceorientation", handleOrientation);
         gyroEnabled = true;
-        gyroHintElapsed = 0;
-        gyroHintActive = true;
-        handFadeStartAlpha = hand.alpha;
       };
 
       enableGyroOnPointer = async () => {
@@ -187,7 +186,7 @@ export default function Home() {
         { sprite: dani, vx: 0, vy: 0, mass: 7, targetX: dani.x, targetY: dani.y },
       ];
 
-      app.stage.addChild(circle, hand, rotate, hello, friend, im, dani);
+      app.stage.addChild(circle, hand, handLabel, hello, friend, im, dani);
 
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
@@ -215,41 +214,13 @@ export default function Home() {
           Math.max(0, (handFadeElapsed - handFadeDelay) / handFadeDuration),
         );
         const idleHandAlpha = handShouldFadeIn ? 0.1 * fadeProgress : 0;
-
-        if (gyroHintActive) {
-          gyroHintElapsed += ticker.deltaMS / 1000;
-          const crossfadeEnd = gyroCrossfadeDuration;
-          const displayEnd = crossfadeEnd + gyroDisplayDuration;
-          const fadeOutEnd = displayEnd + gyroFadeOutDuration;
-
-          if (gyroHintElapsed <= crossfadeEnd) {
-            const t = gyroHintElapsed / gyroCrossfadeDuration;
-            hand.alpha = handFadeStartAlpha * (1 - t);
-            rotate.alpha = gyroHintMaxAlpha * t;
-          } else if (gyroHintElapsed <= displayEnd) {
-            hand.alpha = 0;
-            rotate.alpha = gyroHintMaxAlpha;
-          } else if (gyroHintElapsed <= fadeOutEnd) {
-            const t = (gyroHintElapsed - displayEnd) / gyroFadeOutDuration;
-            hand.alpha = 0;
-            rotate.alpha = gyroHintMaxAlpha * (1 - t);
-          } else {
-            hand.alpha = 0;
-            rotate.alpha = 0;
-            gyroHintActive = false;
-          }
-        } else {
-          hand.alpha = idleHandAlpha;
-          rotate.alpha = 0;
-        }
-
-        hand.visible = handShouldFadeIn || gyroHintActive;
-        rotate.visible = gyroHintActive;
-        if (hand.visible || rotate.visible) {
-          hand.x = circle.x;
-          hand.y = circle.y;
-          rotate.x = circle.x;
-          rotate.y = circle.y;
+        hand.alpha = idleHandAlpha;
+        hand.visible = handShouldFadeIn;
+        handLabel.alpha = idleHandAlpha;
+        handLabel.visible = handShouldFadeIn;
+        if (handShouldFadeIn) {
+          handLabel.x = hand.x + hand.width + 8;
+          handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
         }
 
         velocityX = (velocityX + tiltX * delta) * damping;
