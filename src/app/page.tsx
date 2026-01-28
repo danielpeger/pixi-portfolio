@@ -18,9 +18,13 @@ export default function Home() {
     let isMounted = true;
 
     const init = async () => {
+      const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+      const backgroundColor = prefersDark ? 0x000000 : 0xffffff;
+      const textColor = prefersDark ? 0xffffff : 0x000000;
+
       await app.init({
         resizeTo: container,
-        backgroundColor: 0xffffff,
+        backgroundColor,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
       });
@@ -43,7 +47,7 @@ export default function Home() {
       }
 
       const textStyle = new TextStyle({
-        fill: 0x000000,
+        fill: textColor,
         fontSize: 70,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
