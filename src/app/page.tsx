@@ -101,7 +101,7 @@ export default function Home() {
       hand.x = 28;
       hand.y = 31;
       let handFadeElapsed = 0;
-      const handFadeDelay = 1;
+      const handFadeDelay = 2;
       const handFadeDuration = 1;
       let handEnabledElapsed = 0;
       const handEnabledHold = 3;
@@ -546,7 +546,7 @@ export default function Home() {
 
   return (
     <main>
-      <div ref={containerRef} className="h-[80vh] w-screen" />
+      <div ref={containerRef} className="h-[80svh] w-screen" />
       <section className="mx-8">
       <p>a Budapest-based design engineer trying to put the soft back in software.</p>
       </section>
