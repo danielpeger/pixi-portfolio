@@ -151,12 +151,16 @@ export default function Home() {
             }
           } catch (error) {
             console.warn("Device orientation permission request failed.", error);
-            gyroDenied = true;
-            handMode = "hidden";
-            try {
-              window.localStorage.setItem(gyroDeniedKey, "true");
-            } catch {
-              // Ignore storage failures.
+            const notAllowed =
+              error instanceof DOMException && error.name === "NotAllowedError";
+            if (!notAllowed) {
+              gyroDenied = true;
+              handMode = "hidden";
+              try {
+                window.localStorage.setItem(gyroDeniedKey, "true");
+              } catch {
+                // Ignore storage failures.
+              }
             }
             return false;
           }
@@ -201,7 +205,7 @@ export default function Home() {
       if (shouldPrompt) {
         app.canvas.addEventListener("click", enableGyroOnPointer);
         app.canvas.addEventListener("touchend", enableGyroOnPointer);
-      } else {
+      } else if (!needsTapToEnable) {
         enableGyro();
       }
 
