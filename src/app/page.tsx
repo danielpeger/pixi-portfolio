@@ -65,6 +65,10 @@ export default function Home() {
         src: "/hand.svg",
         data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
       });
+      const checkTexture = await Assets.load({
+        src: "/check.svg",
+        data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
+      });
       const hand = new Sprite(handTexture);
       const handSize = handTargetSize;
       hand.anchor.set(0);
@@ -75,6 +79,9 @@ export default function Home() {
       let handFadeElapsed = 0;
       const handFadeDelay = 1;
       const handFadeDuration = 1;
+      let handEnabledElapsed = 0;
+      const handEnabledHold = 3;
+      const handEnabledFadeDuration = 1;
       const handLabel = new Text({
         text: "Tap to enable gyroscope",
         style: new TextStyle({
@@ -107,9 +114,12 @@ export default function Home() {
       };
 
       let gyroEnabled = false;
+      let gyroDenied = false;
+      const gyroDeniedKey = "gyroDenied";
+      let handMode: "prompt" | "enabled" | "hidden" = "hidden";
       const enableGyro = async () => {
-        if (typeof DeviceOrientationEvent === "undefined") return;
-        if (gyroEnabled) return;
+        if (typeof DeviceOrientationEvent === "undefined") return false;
+        if (gyroEnabled) return true;
         if ("requestPermission" in DeviceOrientationEvent) {
           try {
             const permission = await (
@@ -117,28 +127,66 @@ export default function Home() {
                 requestPermission?: () => Promise<PermissionState>;
               }
             ).requestPermission?.();
-            if (permission !== "granted") return;
+            if (permission !== "granted") {
+              gyroDenied = true;
+              handMode = "hidden";
+              try {
+                window.localStorage.setItem(gyroDeniedKey, "true");
+              } catch {
+                // Ignore storage failures.
+              }
+              return false;
+            }
           } catch (error) {
             console.warn("Device orientation permission request failed.", error);
-            return;
+            gyroDenied = true;
+            handMode = "hidden";
+            try {
+              window.localStorage.setItem(gyroDeniedKey, "true");
+            } catch {
+              // Ignore storage failures.
+            }
+            return false;
           }
         }
         baseGamma = null;
         baseBeta = null;
         window.addEventListener("deviceorientation", handleOrientation);
         gyroEnabled = true;
+        handMode = "enabled";
+        handEnabledElapsed = 0;
+        hand.texture = checkTexture;
+        hand.scale.set(20 / hand.texture.height);
+        handLabel.text = "Tilt phone to move ball";
+        handLabel.x = hand.x + hand.width + 8;
+        handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
+        try {
+          window.localStorage.removeItem(gyroDeniedKey);
+        } catch {
+          // Ignore storage failures.
+        }
+        return true;
       };
 
       enableGyroOnPointer = async () => {
-        await enableGyro();
-        app.canvas.removeEventListener("click", enableGyroOnPointer);
-        app.canvas.removeEventListener("touchend", enableGyroOnPointer);
+        const enabled = await enableGyro();
+        if (enabled || gyroDenied) {
+          app.canvas.removeEventListener("click", enableGyroOnPointer);
+          app.canvas.removeEventListener("touchend", enableGyroOnPointer);
+        }
       };
       const hasDeviceOrientation = typeof DeviceOrientationEvent !== "undefined";
       const needsTapToEnable =
         hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent;
-      hand.visible = needsTapToEnable;
-      if (needsTapToEnable) {
+      try {
+        gyroDenied = window.localStorage.getItem(gyroDeniedKey) === "true";
+      } catch {
+        // Ignore storage failures.
+      }
+      const shouldPrompt = needsTapToEnable && !gyroDenied;
+      handMode = shouldPrompt ? "prompt" : "hidden";
+      hand.visible = shouldPrompt;
+      if (shouldPrompt) {
         app.canvas.addEventListener("click", enableGyroOnPointer);
         app.canvas.addEventListener("touchend", enableGyroOnPointer);
       } else {
@@ -185,6 +233,17 @@ export default function Home() {
         { sprite: im, vx: 0, vy: 0, mass: 7, targetX: im.x, targetY: im.y },
         { sprite: dani, vx: 0, vy: 0, mass: 7, targetX: dani.x, targetY: dani.y },
       ];
+      const collisionYOffset = 18;
+      const collisionYOffsetSprites = new Set([friend, dani]);
+      const getCollisionBounds = (sprite: Text) => {
+        const offset = collisionYOffsetSprites.has(sprite) ? collisionYOffset : 0;
+        return {
+          left: sprite.x,
+          top: sprite.y + offset,
+          right: sprite.x + sprite.width,
+          bottom: sprite.y + sprite.height + offset,
+        };
+      };
 
       app.stage.addChild(circle, hand, handLabel, hello, friend, im, dani);
 
@@ -207,20 +266,39 @@ export default function Home() {
           tiltX = 0.15;
           tiltY = 0.5;
         }
-        const handShouldFadeIn = !gyroEnabled && needsTapToEnable;
+        const handShouldFadeIn = handMode === "prompt";
         if (handShouldFadeIn) {
           handFadeElapsed += ticker.deltaMS / 1000;
         }
-        const fadeProgress = Math.min(
+        if (handMode === "enabled") {
+          handEnabledElapsed += ticker.deltaMS / 1000;
+        }
+
+        const promptFadeProgress = Math.min(
           1,
           Math.max(0, (handFadeElapsed - handFadeDelay) / handFadeDuration),
         );
-        const handAlpha = handShouldFadeIn ? fadeProgress : 0;
-        const labelAlpha = handShouldFadeIn ? fadeProgress : 0;
+        const enabledFadeProgress = Math.min(
+          1,
+          Math.max(
+            0,
+            (handEnabledElapsed - handEnabledHold) / handEnabledFadeDuration,
+          ),
+        );
+        let handAlpha = 0;
+        if (handMode === "prompt") {
+          handAlpha = promptFadeProgress;
+        } else if (handMode === "enabled") {
+          handAlpha = 1 - enabledFadeProgress;
+          if (handEnabledElapsed >= handEnabledHold + handEnabledFadeDuration) {
+            handMode = "hidden";
+          }
+        }
+
         hand.alpha = handAlpha;
-        hand.visible = handShouldFadeIn;
-        handLabel.alpha = labelAlpha;
-        handLabel.visible = handShouldFadeIn;
+        hand.visible = handMode !== "hidden";
+        handLabel.alpha = handAlpha;
+        handLabel.visible = handMode !== "hidden";
 
         velocityX = (velocityX + tiltX * delta) * damping;
         velocityY = (velocityY + tiltY * delta) * damping;
@@ -267,10 +345,10 @@ export default function Home() {
 
         for (const body of textBodies) {
           const text = body.sprite;
-          const rectLeft = text.x;
-          const rectTop = text.y;
-          const rectRight = text.x + text.width;
-          const rectBottom = text.y + text.height;
+          const { left: rectLeft, top: rectTop, right: rectRight, bottom: rectBottom } =
+            getCollisionBounds(text);
+          const rectCenterX = (rectLeft + rectRight) / 2;
+          const rectCenterY = (rectTop + rectBottom) / 2;
 
           const nearestX = Math.max(rectLeft, Math.min(circle.x, rectRight));
           const nearestY = Math.max(rectTop, Math.min(circle.y, rectBottom));
@@ -283,11 +361,11 @@ export default function Home() {
             const dist = Math.max(0.0001, Math.sqrt(distSq));
             const normalX =
               distSq === 0
-                ? circle.x - (rectLeft + text.width / 2)
+                ? circle.x - rectCenterX
                 : diffX / dist;
             const normalY =
               distSq === 0
-                ? circle.y - (rectTop + text.height / 2)
+                ? circle.y - rectCenterY
                 : diffY / dist;
             const normalLength = Math.max(
               0.0001,
@@ -351,15 +429,11 @@ export default function Home() {
             const aSprite = a.sprite;
             const bSprite = b.sprite;
 
-            const aLeft = aSprite.x;
-            const aTop = aSprite.y;
-            const aRight = aSprite.x + aSprite.width;
-            const aBottom = aSprite.y + aSprite.height;
+            const { left: aLeft, top: aTop, right: aRight, bottom: aBottom } =
+              getCollisionBounds(aSprite);
 
-            const bLeft = bSprite.x;
-            const bTop = bSprite.y;
-            const bRight = bSprite.x + bSprite.width;
-            const bBottom = bSprite.y + bSprite.height;
+            const { left: bLeft, top: bTop, right: bRight, bottom: bBottom } =
+              getCollisionBounds(bSprite);
 
             const overlapX = Math.min(aRight, bRight) - Math.max(aLeft, bLeft);
             const overlapY = Math.min(aBottom, bBottom) - Math.max(aTop, bTop);
