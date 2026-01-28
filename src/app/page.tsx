@@ -51,6 +51,14 @@ export default function Home() {
         fontSize: 70,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
+        trim: false,
+      });
+      const friendTextStyle = new TextStyle({
+        fill: textColor,
+        fontSize: 70,
+        fontWeight: "400",
+        fontFamily: '"Jua", Arial, Helvetica, sans-serif',
+        trim: true,
       });
 
       const circleRadius = 65;
@@ -204,7 +212,7 @@ export default function Home() {
 
       const friend = new Text({
         text: "friend,",
-        style: textStyle,
+        style: friendTextStyle,
       });
 
       const im = new Text({
@@ -237,15 +245,13 @@ export default function Home() {
         { sprite: im, vx: 0, vy: 0, mass: 7, targetX: im.x, targetY: im.y },
         { sprite: dani, vx: 0, vy: 0, mass: 7, targetX: dani.x, targetY: dani.y },
       ];
-      const collisionYOffset = 18;
-      const collisionYOffsetSprites = new Set([friend, dani]);
       const getCollisionBounds = (sprite: Text) => {
-        const offset = collisionYOffsetSprites.has(sprite) ? collisionYOffset : 0;
+        const bounds = sprite.getLocalBounds();
         return {
-          left: sprite.x,
-          top: sprite.y + offset,
-          right: sprite.x + sprite.width,
-          bottom: sprite.y + sprite.height + offset,
+          left: sprite.x + bounds.x,
+          top: sprite.y + bounds.y,
+          right: sprite.x + bounds.x + bounds.width,
+          bottom: sprite.y + bounds.y + bounds.height,
         };
       };
 
