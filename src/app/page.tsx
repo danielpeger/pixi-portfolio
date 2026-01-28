@@ -12,6 +12,7 @@ export default function Home() {
     if (!container) return;
 
     const app = new Application();
+    let resizeObserver: ResizeObserver | null = null;
     let handleOrientation: (event: DeviceOrientationEvent) => void = () => undefined;
     let enableGyroOnPointer: () => void = () => undefined;
 
@@ -41,6 +42,17 @@ export default function Home() {
       app.canvas.style.display = "block";
       app.canvas.style.width = "100%";
       app.canvas.style.height = "100%";
+
+      const resizeToContainer = () => {
+        const { width, height } = container.getBoundingClientRect();
+        if (width > 0 && height > 0) {
+          app.renderer.resize(width, height);
+        }
+      };
+
+      resizeToContainer();
+      resizeObserver = new ResizeObserver(resizeToContainer);
+      resizeObserver.observe(container);
 
       if (document.fonts) {
         await document.fonts.load('400 70px "Jua"');
@@ -527,6 +539,7 @@ export default function Home() {
       window.removeEventListener("deviceorientation", handleOrientation);
       app.canvas.removeEventListener("click", enableGyroOnPointer);
       app.canvas.removeEventListener("touchend", enableGyroOnPointer);
+      resizeObserver?.disconnect();
       app.destroy(true);
     };
   }, []);
