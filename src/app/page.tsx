@@ -11,6 +11,12 @@ export default function Home() {
     const container = containerRef.current;
     if (!container) return;
 
+    const viewportHeight =
+      window.visualViewport?.height ??
+      window.innerHeight ??
+      document.documentElement.clientHeight;
+    container.style.height = `${Math.round(viewportHeight * 0.92)}px`;
+
     const app = new Application();
     let resizeObserver: ResizeObserver | null = null;
     let handleOrientation: (event: DeviceOrientationEvent) => void = () => undefined;
@@ -546,7 +552,7 @@ export default function Home() {
 
   return (
     <main>
-      <div ref={containerRef} className="h-[80svh] w-screen" />
+      <div ref={containerRef} className="h-[80vh] w-screen" />
       <section className="mx-8">
       <p>a Budapest-based design engineer trying to put the soft back in software.</p>
       </section>
