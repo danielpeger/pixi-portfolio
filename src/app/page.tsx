@@ -77,8 +77,8 @@ export default function Home() {
         src: "/hand.svg",
         data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
       });
-      const checkTexture = await Assets.load({
-        src: "/check.svg",
+      const tiltTexture = await Assets.load({
+        src: "/tilt.svg",
         data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
       });
       const hand = new Sprite(handTexture);
@@ -171,7 +171,7 @@ export default function Home() {
         gyroEnabled = true;
         handMode = "enabled";
         handEnabledElapsed = 0;
-        hand.texture = checkTexture;
+        hand.texture = tiltTexture;
         hand.scale.set(20 / hand.texture.height);
         handLabel.text = "Tilt phone to move ball";
         handLabel.x = hand.x + hand.width + 8;
