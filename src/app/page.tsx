@@ -28,6 +28,9 @@ export default function Home() {
     let handleOrientation: (event: DeviceOrientationEvent) => void = () =>
       undefined;
     let enableGyroOnPointer: () => void = () => undefined;
+    let positionFpsLabel: () => void = () => undefined;
+    let handlePointerMove: (event: PointerEvent) => void = () => undefined;
+    let handlePointerLeave: () => void = () => undefined;
 
     let isMounted = true;
 
@@ -58,17 +61,6 @@ export default function Home() {
       app.canvas.style.width = "100%";
       app.canvas.style.height = "100%";
 
-      const resizeToContainer = () => {
-        const { width, height } = container.getBoundingClientRect();
-        if (width > 0 && height > 0) {
-          app.renderer.resize(width, height);
-        }
-      };
-
-      resizeToContainer();
-      resizeObserver = new ResizeObserver(resizeToContainer);
-      resizeObserver.observe(container);
-
       if (document.fonts) {
         await document.fonts.load('400 70px "Jua"');
       }
@@ -87,9 +79,35 @@ export default function Home() {
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
         trim: true,
       });
+      const fpsText = new Text({
+        text: "FPS: --",
+        style: new TextStyle({
+          fill: textColor,
+          fontSize: 16,
+          fontWeight: "600",
+          fontFamily: '"SF Pro Text", system-ui, sans-serif',
+        }),
+      });
+      fpsText.anchor.set(1, 0);
+      positionFpsLabel = () => {
+        fpsText.x = app.renderer.width - 16;
+        fpsText.y = 12;
+      };
+      positionFpsLabel();
 
       const circleRadius = 65;
       const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
+      const resizeToContainer = () => {
+        const { width, height } = container.getBoundingClientRect();
+        if (width > 0 && height > 0) {
+          app.renderer.resize(width, height);
+          positionFpsLabel();
+        }
+      };
+
+      resizeToContainer();
+      resizeObserver = new ResizeObserver(resizeToContainer);
+      resizeObserver.observe(container);
       circle.x = 20 + circleRadius;
       circle.y = 16 + circleRadius;
       let circleSquashX = 0;
@@ -143,11 +161,25 @@ export default function Home() {
       let velocityY = 0;
       let tiltX = 0;
       let tiltY = 0;
+      let idleTiltElapsed = 0;
+      const idleTiltDuration = 4;
+      const idleTiltStartX = 0.15;
+      const idleTiltStartY = 0.5;
       let baseGamma: number | null = null;
       let baseBeta: number | null = null;
+      let hasOrientationData = false;
+      let pointerX = 0;
+      let pointerY = 0;
+      let pointerVX = 0;
+      let pointerVY = 0;
+      let pointerActive = false;
+      let lastPointerTime = 0;
+      let lastPointerX = 0;
+      let lastPointerY = 0;
 
       handleOrientation = (event: DeviceOrientationEvent) => {
         if (event.gamma == null || event.beta == null) return;
+        hasOrientationData = true;
         if (baseGamma == null || baseBeta == null) {
           baseGamma = event.gamma;
           baseBeta = event.beta;
@@ -225,23 +257,62 @@ export default function Home() {
           app.canvas.removeEventListener("touchend", enableGyroOnPointer);
         }
       };
+      const isHandheld =
+        window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
       const hasDeviceOrientation =
-        typeof DeviceOrientationEvent !== "undefined";
+        isHandheld && typeof DeviceOrientationEvent !== "undefined";
       const needsTapToEnable =
         hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent;
-      try {
-        gyroDenied = window.localStorage.getItem(gyroDeniedKey) === "true";
-      } catch {
-        // Ignore storage failures.
+      if (hasDeviceOrientation) {
+        try {
+          gyroDenied = window.localStorage.getItem(gyroDeniedKey) === "true";
+        } catch {
+          // Ignore storage failures.
+        }
+        const shouldPrompt = needsTapToEnable && !gyroDenied;
+        handMode = shouldPrompt ? "prompt" : "hidden";
+        hand.visible = shouldPrompt;
+        if (shouldPrompt) {
+          app.canvas.addEventListener("click", enableGyroOnPointer);
+          app.canvas.addEventListener("touchend", enableGyroOnPointer);
+        } else if (!needsTapToEnable) {
+          enableGyro();
+        }
+      } else {
+        handMode = "hidden";
+        hand.visible = false;
+        handLabel.visible = false;
       }
-      const shouldPrompt = needsTapToEnable && !gyroDenied;
-      handMode = shouldPrompt ? "prompt" : "hidden";
-      hand.visible = shouldPrompt;
-      if (shouldPrompt) {
-        app.canvas.addEventListener("click", enableGyroOnPointer);
-        app.canvas.addEventListener("touchend", enableGyroOnPointer);
-      } else if (!needsTapToEnable) {
-        enableGyro();
+
+      handlePointerMove = (event: PointerEvent) => {
+        const rect = app.canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        pointerX = x;
+        pointerY = y;
+        pointerActive = true;
+        const now = performance.now();
+        if (lastPointerTime > 0) {
+          const dt = Math.max(0.001, (now - lastPointerTime) / 1000);
+          pointerVX = (x - lastPointerX) / dt;
+          pointerVY = (y - lastPointerY) / dt;
+        }
+        lastPointerTime = now;
+        lastPointerX = x;
+        lastPointerY = y;
+      };
+
+      handlePointerLeave = () => {
+        pointerActive = false;
+        pointerVX = 0;
+        pointerVY = 0;
+      };
+
+      if (!isHandheld) {
+        app.canvas.addEventListener("pointermove", handlePointerMove);
+        app.canvas.addEventListener("pointerdown", handlePointerMove);
+        app.canvas.addEventListener("pointerleave", handlePointerLeave);
+        app.canvas.addEventListener("pointerout", handlePointerLeave);
       }
 
       const hello = new Text({
@@ -315,8 +386,19 @@ export default function Home() {
         };
       };
 
-      app.stage.addChild(circle, hand, handLabel, hello, friend, im, dani);
+      app.stage.addChild(
+        circle,
+        hand,
+        handLabel,
+        hello,
+        friend,
+        im,
+        dani,
+        fpsText,
+      );
 
+      let fpsElapsed = 0;
+      const fpsUpdateInterval = 0.05;
       app.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
         const damping = 0.968;
@@ -325,6 +407,10 @@ export default function Home() {
         const textBounce = 1.07;
         const maxVelocity = 40;
         const circleMass = 1;
+        const cursorRadius = 6;
+        const cursorKickScale = 0.005;
+        const cursorSquashScale = 0.25;
+        const cursorSquashSpeedRef = 800;
         const textSpring = 0.008;
         const squashDecay = 0.5;
         const squashRise = 0.13;
@@ -332,9 +418,24 @@ export default function Home() {
         const circleSquashVelocityScale = 0.09;
         const stretchFactor = 1.4;
 
-        if (!gyroEnabled) {
-          tiltX = 0.15;
-          tiltY = 0.5;
+        fpsElapsed += ticker.deltaMS / 1000;
+        if (fpsElapsed >= fpsUpdateInterval) {
+          fpsText.text = `FPS: ${Math.round(ticker.FPS)}`;
+          fpsElapsed = 0;
+        }
+
+        if (!gyroEnabled || !hasOrientationData) {
+          if (!isHandheld) {
+            idleTiltElapsed += ticker.deltaMS / 1000;
+            const lerpT = Math.min(1, idleTiltElapsed / idleTiltDuration);
+            tiltX = idleTiltStartX * (1 - lerpT);
+            tiltY = idleTiltStartY * (1 - lerpT);
+          } else {
+            tiltX = idleTiltStartX;
+            tiltY = idleTiltStartY;
+          }
+        } else {
+          idleTiltElapsed = 0;
         }
         const handShouldFadeIn = handMode === "prompt";
         if (handShouldFadeIn) {
@@ -377,6 +478,53 @@ export default function Home() {
 
         circle.x += velocityX * delta;
         circle.y += velocityY * delta;
+
+        if (!isHandheld && pointerActive) {
+          const dx = circle.x - pointerX;
+          const dy = circle.y - pointerY;
+          const minDist = circleRadius + cursorRadius;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < minDist * minDist) {
+            const dist = Math.max(0.0001, Math.sqrt(distSq));
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = minDist - dist;
+            circle.x += nx * overlap;
+            circle.y += ny * overlap;
+
+            const relVelX = velocityX - pointerVX;
+            const relVelY = velocityY - pointerVY;
+            const velAlongNormal = relVelX * nx + relVelY * ny;
+            if (velAlongNormal < 0) {
+              const restitution = 0.2;
+              const kick = (1 + restitution) * velAlongNormal * cursorKickScale;
+              velocityX -= kick * nx;
+              velocityY -= kick * ny;
+              const pointerSpeed = Math.hypot(pointerVX, pointerVY);
+              const speedScale = Math.min(
+                1,
+                pointerSpeed / cursorSquashSpeedRef,
+              );
+              const impact =
+                Math.min(
+                  circleSquashMax,
+                  Math.abs(velAlongNormal) * circleSquashVelocityScale,
+                ) *
+                cursorSquashScale *
+                speedScale;
+              circleSquashTargetX = Math.max(
+                circleSquashTargetX,
+                impact * Math.abs(nx),
+              );
+              circleSquashTargetY = Math.max(
+                circleSquashTargetY,
+                impact * Math.abs(ny),
+              );
+            }
+          }
+          pointerVX *= 0.9;
+          pointerVY *= 0.9;
+        }
 
         const maxX = app.renderer.width - circleRadius;
         const maxY = app.renderer.height - circleRadius;
@@ -601,6 +749,10 @@ export default function Home() {
       window.removeEventListener("deviceorientation", handleOrientation);
       app.canvas.removeEventListener("click", enableGyroOnPointer);
       app.canvas.removeEventListener("touchend", enableGyroOnPointer);
+      app.canvas.removeEventListener("pointermove", handlePointerMove);
+      app.canvas.removeEventListener("pointerdown", handlePointerMove);
+      app.canvas.removeEventListener("pointerleave", handlePointerLeave);
+      app.canvas.removeEventListener("pointerout", handlePointerLeave);
       resizeObserver?.disconnect();
       app.destroy(true);
     };
