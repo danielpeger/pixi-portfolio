@@ -5,20 +5,20 @@
 :root {
   --background: #ffffff;
   --foreground: #000;
-  --secondary-foreground: #8A8A8E;
+  --secondary-foreground: #8a8a8e;
   --tertiary-foreground: #c3c3c8;
-  --separator: #E5E5EA;
-  --accent: #FFCC00;
+  --separator: #e5e5ea;
+  --accent: #ffcc00;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #000;
     --foreground: #fff;
-    --secondary-foreground: #3C3C43;
-    --tertiary-foreground: #DADADD;
-    --separator: #E5E5EA;
-    --accent: #FFCC00;
+    --secondary-foreground: #3c3c43;
+    --tertiary-foreground: #dadadd;
+    --separator: #e5e5ea;
+    --accent: #ffcc00;
   }
 }
 
@@ -26,15 +26,14 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  box-sizing: content-box;
 }
 
 body {
   color: var(--secondary-foreground);
   background: var(--background);
-  font-family: "SF Pro Rounded", "SF Pro Text", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 22px;
-  line-height: 30px;
+  font-family: "SF Pro Rounded", "SF Pro Text", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -45,6 +44,7 @@ h3,
 h4,
 h5,
 h6 {
+  color: var(--foreground);
   font-family: var(--font-jua), "Jua", "SF Pro Rounded", "SF Pro Text",
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;

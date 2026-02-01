@@ -1,8 +1,14 @@
-
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Application, Assets, Graphics, Sprite, Text, TextStyle } from "pixi.js";
+import {
+  Application,
+  Assets,
+  Graphics,
+  Sprite,
+  Text,
+  TextStyle,
+} from "pixi.js";
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -19,13 +25,16 @@ export default function Home() {
 
     const app = new Application();
     let resizeObserver: ResizeObserver | null = null;
-    let handleOrientation: (event: DeviceOrientationEvent) => void = () => undefined;
+    let handleOrientation: (event: DeviceOrientationEvent) => void = () =>
+      undefined;
     let enableGyroOnPointer: () => void = () => undefined;
 
     let isMounted = true;
 
     const init = async () => {
-      const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+      const prefersDark = window.matchMedia?.(
+        "(prefers-color-scheme: dark)",
+      )?.matches;
       const backgroundColor = prefersDark ? 0x000000 : 0xffffff;
       const textColor = prefersDark ? 0xffffff : 0x000000;
 
@@ -80,9 +89,7 @@ export default function Home() {
       });
 
       const circleRadius = 65;
-      const circle = new Graphics()
-        .circle(0, 0, circleRadius)
-        .fill("0xffcc00");
+      const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
       circle.x = 20 + circleRadius;
       circle.y = 16 + circleRadius;
       let circleSquashX = 0;
@@ -93,11 +100,17 @@ export default function Home() {
       const handRasterScale = Math.max(2, Math.ceil(handTargetSize / 25));
       const handTexture = await Assets.load({
         src: "/hand.svg",
-        data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
+        data: {
+          scale: handRasterScale,
+          resolution: window.devicePixelRatio || 1,
+        },
       });
       const tiltTexture = await Assets.load({
         src: "/tilt.svg",
-        data: { scale: handRasterScale, resolution: window.devicePixelRatio || 1 },
+        data: {
+          scale: handRasterScale,
+          resolution: window.devicePixelRatio || 1,
+        },
       });
       const hand = new Sprite(handTexture);
       const handSize = handTargetSize;
@@ -107,7 +120,7 @@ export default function Home() {
       hand.x = 28;
       hand.y = 31;
       let handFadeElapsed = 0;
-      const handFadeDelay = 2;
+      const handFadeDelay = 3;
       const handFadeDuration = 1;
       let handEnabledElapsed = 0;
       const handEnabledHold = 3;
@@ -168,7 +181,10 @@ export default function Home() {
               return false;
             }
           } catch (error) {
-            console.warn("Device orientation permission request failed.", error);
+            console.warn(
+              "Device orientation permission request failed.",
+              error,
+            );
             const notAllowed =
               error instanceof DOMException && error.name === "NotAllowedError";
             if (!notAllowed) {
@@ -209,7 +225,8 @@ export default function Home() {
           app.canvas.removeEventListener("touchend", enableGyroOnPointer);
         }
       };
-      const hasDeviceOrientation = typeof DeviceOrientationEvent !== "undefined";
+      const hasDeviceOrientation =
+        typeof DeviceOrientationEvent !== "undefined";
       const needsTapToEnable =
         hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent;
       try {
@@ -262,10 +279,31 @@ export default function Home() {
       dani.y = 484;
 
       const textBodies = [
-        { sprite: hello, vx: 0, vy: 0, mass: 7, targetX: hello.x, targetY: hello.y },
-        { sprite: friend, vx: 0, vy: 0, mass: 7, targetX: friend.x, targetY: friend.y },
+        {
+          sprite: hello,
+          vx: 0,
+          vy: 0,
+          mass: 7,
+          targetX: hello.x,
+          targetY: hello.y,
+        },
+        {
+          sprite: friend,
+          vx: 0,
+          vy: 0,
+          mass: 7,
+          targetX: friend.x,
+          targetY: friend.y,
+        },
         { sprite: im, vx: 0, vy: 0, mass: 7, targetX: im.x, targetY: im.y },
-        { sprite: dani, vx: 0, vy: 0, mass: 7, targetX: dani.x, targetY: dani.y },
+        {
+          sprite: dani,
+          vx: 0,
+          vy: 0,
+          mass: 7,
+          targetX: dani.x,
+          targetY: dani.y,
+        },
       ];
       const getCollisionBounds = (sprite: Text) => {
         const bounds = sprite.getLocalBounds();
@@ -348,14 +386,20 @@ export default function Home() {
           velocityX = Math.abs(velocityX) * bounce;
           circleSquashTargetX = Math.max(
             circleSquashTargetX,
-            Math.min(circleSquashMax, Math.abs(velocityX) * circleSquashVelocityScale),
+            Math.min(
+              circleSquashMax,
+              Math.abs(velocityX) * circleSquashVelocityScale,
+            ),
           );
         } else if (circle.x > maxX) {
           circle.x = maxX;
           velocityX = -Math.abs(velocityX) * bounce;
           circleSquashTargetX = Math.max(
             circleSquashTargetX,
-            Math.min(circleSquashMax, Math.abs(velocityX) * circleSquashVelocityScale),
+            Math.min(
+              circleSquashMax,
+              Math.abs(velocityX) * circleSquashVelocityScale,
+            ),
           );
         }
 
@@ -364,21 +408,31 @@ export default function Home() {
           velocityY = Math.abs(velocityY) * bounce;
           circleSquashTargetY = Math.max(
             circleSquashTargetY,
-            Math.min(circleSquashMax, Math.abs(velocityY) * circleSquashVelocityScale),
+            Math.min(
+              circleSquashMax,
+              Math.abs(velocityY) * circleSquashVelocityScale,
+            ),
           );
         } else if (circle.y > maxY) {
           circle.y = maxY;
           velocityY = -Math.abs(velocityY) * bounce;
           circleSquashTargetY = Math.max(
             circleSquashTargetY,
-            Math.min(circleSquashMax, Math.abs(velocityY) * circleSquashVelocityScale),
+            Math.min(
+              circleSquashMax,
+              Math.abs(velocityY) * circleSquashVelocityScale,
+            ),
           );
         }
 
         for (const body of textBodies) {
           const text = body.sprite;
-          const { left: rectLeft, top: rectTop, right: rectRight, bottom: rectBottom } =
-            getCollisionBounds(text);
+          const {
+            left: rectLeft,
+            top: rectTop,
+            right: rectRight,
+            bottom: rectBottom,
+          } = getCollisionBounds(text);
           const rectCenterX = (rectLeft + rectRight) / 2;
           const rectCenterY = (rectTop + rectBottom) / 2;
 
@@ -392,13 +446,9 @@ export default function Home() {
           if (distSq < circleRadius * circleRadius) {
             const dist = Math.max(0.0001, Math.sqrt(distSq));
             const normalX =
-              distSq === 0
-                ? circle.x - rectCenterX
-                : diffX / dist;
+              distSq === 0 ? circle.x - rectCenterX : diffX / dist;
             const normalY =
-              distSq === 0
-                ? circle.y - rectCenterY
-                : diffY / dist;
+              distSq === 0 ? circle.y - rectCenterY : diffY / dist;
             const normalLength = Math.max(
               0.0001,
               Math.sqrt(normalX * normalX + normalY * normalY),
@@ -461,11 +511,19 @@ export default function Home() {
             const aSprite = a.sprite;
             const bSprite = b.sprite;
 
-            const { left: aLeft, top: aTop, right: aRight, bottom: aBottom } =
-              getCollisionBounds(aSprite);
+            const {
+              left: aLeft,
+              top: aTop,
+              right: aRight,
+              bottom: aBottom,
+            } = getCollisionBounds(aSprite);
 
-            const { left: bLeft, top: bTop, right: bRight, bottom: bBottom } =
-              getCollisionBounds(bSprite);
+            const {
+              left: bLeft,
+              top: bTop,
+              right: bRight,
+              bottom: bBottom,
+            } = getCollisionBounds(bSprite);
 
             const overlapX = Math.min(aRight, bRight) - Math.max(aLeft, bLeft);
             const overlapY = Math.min(aBottom, bBottom) - Math.max(aTop, bTop);
@@ -511,7 +569,6 @@ export default function Home() {
                 a.vy += (impulse / a.mass) * ny;
                 b.vx -= (impulse / b.mass) * nx;
                 b.vy -= (impulse / b.mass) * ny;
-
               }
             }
           }
@@ -534,7 +591,6 @@ export default function Home() {
           1 - circleSquashX + circleSquashY * stretchFactor,
           1 - circleSquashY + circleSquashX * stretchFactor,
         );
-
       });
     };
 
@@ -551,10 +607,63 @@ export default function Home() {
   }, []);
 
   return (
-    <main>
-      <div ref={containerRef} className="h-[80vh] w-screen" />
-      <section className="mx-8">
-      <p>a Budapest-based design engineer trying to put the soft back in software.</p>
+    <main className="flex flex-col flex-wrap content-between h-[5000px] lg:before:content-[''] lg:before:basis-full lg:before:w-0 lg:before:lg:order-2 text-lg lg:text-base xl:text-xl">
+      <section className="w-full lg:w-[calc(50%+36px)] lg:order-1">
+        <div
+          ref={containerRef}
+          className="bg-green-500 h-[80vh] lg:h-[calc(100vh+72px)] lg:max-h-[800px] xl:max-h-[960px]"
+        />
+      </section>
+      <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
+        <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] lg:mt-16 mb-16">
+          <p>
+            A design engineer trying to put the soft back in software. <br />
+            Based in Budapest, 32, proud husband and owner of a tabby cat. Been
+            working as a designer for 10 years, and currently doing a masters in
+            software engineering.
+          </p>
+        </div>
+      </section>
+      <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
+        <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] mb-16">
+          <h3 className="pb-2 text-xl xl:text-2xl">Places I've worked at</h3>
+          <ul>
+            <li className="py-2">
+              <a href="https://www.google.com">LastPass</a>
+            </li>
+            <li className="py-2">
+              <a href="https://www.google.com">Paperpal</a>
+            </li>
+            <li className="py-2">
+              <a href="https://www.google.com">Gizmodo</a>
+            </li>
+            <li className="py-2">
+              <a href="https://www.google.com">index.hu</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
+        <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] mb-16">
+          <h3 className="pb-2 text-xl xl:text-2xl">Some stuff I built</h3>
+          <div className="w-full bg-yellow-100 aspect-[5/4] rounded-[20px]"></div>
+          <p>
+            In 2019 I was part of the team rethinking navigation on the Kinja
+            platform. This is the story of how we used an iterative
+            human-centered design process to make our content structured and
+            discoverable.
+          </p>
+        </div>
+      </section>
+      <section className="w-full lg:w-[calc(50%+36px)] lg:order-1">
+        <div className="px-8 lg:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto lg:mr-0">
+          <div className="w-full bg-yellow-100 aspect-[5/4] rounded-[20px]"></div>
+          <p>
+            Index.hu is the highest-traffic online news outlet in Hungary. I
+            spent 2 years at Index, working on user research, design,
+            illustrations and motion graphics.
+          </p>
+        </div>
       </section>
     </main>
   );
