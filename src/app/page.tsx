@@ -759,15 +759,15 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex flex-col flex-wrap content-between h-[5000px] lg:before:content-[''] lg:before:basis-full lg:before:w-0 lg:before:lg:order-2 text-lg lg:text-base xl:text-xl">
-      <section className="w-full lg:w-[calc(50%+36px)] lg:order-1">
+    <main className="flex flex-col flex-wrap content-between h-[5000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:md:order-2 text-lg md:text-base xl:text-xl">
+      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <div
           ref={containerRef}
-          className="bg-green-500 h-[80vh] lg:h-[calc(100vh+72px)] lg:max-h-[800px] xl:max-h-[960px]"
+          className="bg-green-500 h-[80vh] md:h-[calc(100vh+72px)] md:max-h-[800px] xl:max-h-[960px]"
         />
       </section>
-      <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
-        <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] lg:mt-16 mb-16">
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
           <p>
             A design engineer trying to put the{" "}
             <span className="italic">soft</span> back in software. <br />
@@ -777,8 +777,8 @@ export default function Home() {
           </p>
         </div>
       </section>
-      <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
-        <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] mb-16">
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
           <h3 className="pb-2 text-xl xl:text-2xl">Places I've worked at</h3>
           <ul>
             <li className="py-2">
@@ -796,8 +796,8 @@ export default function Home() {
           </ul>
         </div>
       </section>
-      <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
-        <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] mb-16">
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
           <h3 className="pb-2 text-xl xl:text-2xl">Some stuff I built</h3>
           <div className="w-full bg-yellow-100 aspect-[5/4] rounded-[20px]"></div>
           <p>
@@ -808,8 +808,8 @@ export default function Home() {
           </p>
         </div>
       </section>
-      <section className="w-full lg:w-[calc(50%+36px)] lg:order-1">
-        <div className="px-8 lg:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto lg:mr-0">
+      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
+        <div className="px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0">
           <div className="w-full bg-yellow-100 aspect-[5/4] rounded-[20px]"></div>
           <p>
             Index.hu is the highest-traffic online news outlet in Hungary. I
