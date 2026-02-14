@@ -769,9 +769,10 @@ export default function Home() {
       <section className="w-full lg:w-[calc(50%-36px)] lg:order-2">
         <div className="max-w-[612px] lg:max-w-[540px] xl:max-w-[640px] mx-auto lg:ml-0 px-8 lg:pl-0 lg:pr-[72px] lg:mt-16 mb-16">
           <p>
-            A design engineer trying to put the soft back in software. <br />
-            Based in Budapest, 32, proud husband and owner of a tabby cat. Been
-            working as a designer for 10 years, and currently doing a masters in
+            A design engineer trying to put the{" "}
+            <span className="italic">soft</span> back in software. <br />
+            Based in Budapest, 32, proud husband and owner of a tabby cat. 10
+            years in product design, and currently pursuing a master’s in
             software engineering.
           </p>
         </div>
