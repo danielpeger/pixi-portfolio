@@ -97,10 +97,15 @@ export default function Home() {
 
       const circleRadius = 65;
       const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
+      let canvasBounds = app.canvas.getBoundingClientRect();
+      const refreshCanvasBounds = () => {
+        canvasBounds = app.canvas.getBoundingClientRect();
+      };
       const resizeToContainer = () => {
         const { width, height } = container.getBoundingClientRect();
         if (width > 0 && height > 0) {
           app.renderer.resize(width, height);
+          refreshCanvasBounds();
           positionFpsLabel();
         }
       };
@@ -108,6 +113,8 @@ export default function Home() {
       resizeToContainer();
       resizeObserver = new ResizeObserver(resizeToContainer);
       resizeObserver.observe(container);
+      window.addEventListener("resize", refreshCanvasBounds);
+      window.addEventListener("scroll", refreshCanvasBounds, { passive: true });
       circle.x = 20 + circleRadius;
       circle.y = 16 + circleRadius;
       let circleSquashX = 0;
@@ -285,9 +292,8 @@ export default function Home() {
       }
 
       handlePointerMove = (event: PointerEvent) => {
-        const rect = app.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = event.clientX - canvasBounds.left;
+        const y = event.clientY - canvasBounds.top;
         pointerX = x;
         pointerY = y;
         pointerActive = true;
@@ -376,8 +382,26 @@ export default function Home() {
           targetY: dani.y,
         },
       ];
+      const textLocalBoundsCache = new WeakMap<
+        Text,
+        { x: number; y: number; width: number; height: number }
+      >();
+      const getCachedLocalBounds = (sprite: Text) => {
+        let bounds = textLocalBoundsCache.get(sprite);
+        if (!bounds) {
+          const localBounds = sprite.getLocalBounds();
+          bounds = {
+            x: localBounds.x,
+            y: localBounds.y,
+            width: localBounds.width,
+            height: localBounds.height,
+          };
+          textLocalBoundsCache.set(sprite, bounds);
+        }
+        return bounds;
+      };
       const getCollisionBounds = (sprite: Text) => {
-        const bounds = sprite.getLocalBounds();
+        const bounds = getCachedLocalBounds(sprite);
         return {
           left: sprite.x + bounds.x,
           top: sprite.y + bounds.y,
@@ -385,6 +409,9 @@ export default function Home() {
           bottom: sprite.y + bounds.y + bounds.height,
         };
       };
+      for (const body of textBodies) {
+        getCachedLocalBounds(body.sprite);
+      }
 
       app.stage.addChild(
         circle,
@@ -753,6 +780,8 @@ export default function Home() {
       app.canvas.removeEventListener("pointerdown", handlePointerMove);
       app.canvas.removeEventListener("pointerleave", handlePointerLeave);
       app.canvas.removeEventListener("pointerout", handlePointerLeave);
+      window.removeEventListener("resize", refreshCanvasBounds);
+      window.removeEventListener("scroll", refreshCanvasBounds);
       resizeObserver?.disconnect();
       app.destroy(true);
     };
