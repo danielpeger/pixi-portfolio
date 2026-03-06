@@ -31,6 +31,7 @@ export default function Home() {
     let positionFpsLabel: () => void = () => undefined;
     let handlePointerMove: (event: PointerEvent) => void = () => undefined;
     let handlePointerLeave: () => void = () => undefined;
+    let refreshCanvasBounds: () => void = () => undefined;
 
     let isMounted = true;
 
@@ -98,7 +99,7 @@ export default function Home() {
       const circleRadius = 65;
       const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
       let canvasBounds = app.canvas.getBoundingClientRect();
-      const refreshCanvasBounds = () => {
+      refreshCanvasBounds = () => {
         canvasBounds = app.canvas.getBoundingClientRect();
       };
       const resizeToContainer = () => {
