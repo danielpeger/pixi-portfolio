@@ -274,10 +274,11 @@ export default function Home() {
           app.canvas.removeEventListener("touchend", enableGyroOnPointer);
         }
       };
-      const isHandheld =
-        window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+      const hasFinePointer =
+        window.matchMedia?.("(pointer: fine)")?.matches ?? true;
+      const useGyro = !hasFinePointer;
       const hasDeviceOrientation =
-        isHandheld && typeof DeviceOrientationEvent !== "undefined";
+        useGyro && typeof DeviceOrientationEvent !== "undefined";
       const needsTapToEnable =
         hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent;
       if (hasDeviceOrientation) {
@@ -324,7 +325,7 @@ export default function Home() {
         pointerVY = 0;
       };
 
-      if (!isHandheld) {
+      if (hasFinePointer) {
         app.canvas.addEventListener("pointermove", handlePointerMove);
         app.canvas.addEventListener("pointerdown", handlePointerMove);
         app.canvas.addEventListener("pointerleave", handlePointerLeave);
@@ -463,7 +464,7 @@ export default function Home() {
         }
 
         if (!gyroEnabled || !hasOrientationData) {
-          if (!isHandheld) {
+          if (hasFinePointer) {
             idleTiltElapsed += ticker.deltaMS / 1000;
             const lerpT = Math.min(1, idleTiltElapsed / idleTiltDuration);
             tiltX = idleTiltStartX * (1 - lerpT);
@@ -517,7 +518,7 @@ export default function Home() {
         circle.x += velocityX * delta;
         circle.y += velocityY * delta;
 
-        if (!isHandheld && pointerActive) {
+        if (hasFinePointer && pointerActive) {
           const dx = circle.x - pointerX;
           const dy = circle.y - pointerY;
           const minDist = circleRadius + cursorRadius;
