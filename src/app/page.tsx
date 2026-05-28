@@ -777,7 +777,6 @@ export default function Home() {
           1 - circleSquashX + circleSquashY * stretchFactor,
           1 - circleSquashY + circleSquashX * stretchFactor,
         );
-
       });
     };
 
@@ -812,9 +811,9 @@ export default function Home() {
           <p>
             A design engineer trying to put the{" "}
             <span className="italic">soft</span> back in software. <br />
-            Based in Budapest, 32, proud husband and owner of a tabby cat. 10
-            years in product design, and currently pursuing a master’s in
-            software engineering.
+            Based in Budapest, sharing life with my wife and our tabby cat. 10
+            years of experience in product design, and currently pursuing a
+            master’s in software engineering.
           </p>
         </div>
       </section>
