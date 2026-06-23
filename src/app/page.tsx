@@ -17,12 +17,6 @@ export default function Home() {
     const container = containerRef.current;
     if (!container) return;
 
-    const viewportHeight =
-      window.visualViewport?.height ??
-      window.innerHeight ??
-      document.documentElement.clientHeight;
-    container.style.height = `${Math.round(viewportHeight * 0.92)}px`;
-
     const app = new Application();
     let resizeObserver: ResizeObserver | null = null;
     let handleOrientation: (event: DeviceOrientationEvent) => void = () =>
@@ -34,6 +28,8 @@ export default function Home() {
     let refreshCanvasBounds: () => void = () => undefined;
     let handleWindowResize: () => void = () => undefined;
     let handleWindowScroll: () => void = () => undefined;
+    let updateTextFontSizes: () => void = () => undefined;
+    let updateTextPositions: () => void = () => undefined;
 
     let isMounted = true;
 
@@ -66,20 +62,45 @@ export default function Home() {
       app.canvas.style.width = "100%";
       app.canvas.style.height = "100%";
 
+      const scaleFontSize = (viewportWidth: number) => {
+        // Single-column layout: scales up to the md breakpoint.
+        if (viewportWidth < 768) {
+          if (viewportWidth <= 320) return 66;
+          const t = (viewportWidth - 320) / (768 - 320);
+          return 66 + (114 - 66) * t;
+        }
+
+        // Two-column layout: resets at md, then scales 66 -> 80 by 1152.
+        if (viewportWidth < 1152) {
+          const t = (viewportWidth - 768) / (1152 - 768);
+          return 66 + (90 - 66) * t;
+        }
+
+        // Holds at 80 until 1279.
+        if (viewportWidth < 1280) {
+          return 90;
+        }
+
+        // Jumps to 114 at 1280 and above.
+        return 114;
+      };
+
+      const initialFontSize = scaleFontSize(window.innerWidth);
+
       if (document.fonts) {
-        await document.fonts.load('400 70px "Jua"');
+        await document.fonts.load('400 140px "Jua"');
       }
 
       const textStyle = new TextStyle({
         fill: textColor,
-        fontSize: 70,
+        fontSize: initialFontSize,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
         trim: false,
       });
       const friendTextStyle = new TextStyle({
         fill: textColor,
-        fontSize: 70,
+        fontSize: initialFontSize,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
         trim: true,
@@ -110,8 +131,15 @@ export default function Home() {
         const { width, height } = container.getBoundingClientRect();
         if (width > 0 && height > 0) {
           app.renderer.resize(width, height);
+          const viewportHeight =
+            window.visualViewport?.height ??
+            window.innerHeight ??
+            document.documentElement.clientHeight;
+          container.style.height = `${Math.round(viewportHeight * 0.92)}px`;
           refreshCanvasBounds();
           positionFpsLabel();
+          updateTextFontSizes();
+          updateTextPositions();
         }
       };
 
@@ -351,19 +379,77 @@ export default function Home() {
         style: textStyle,
       });
 
-      hello.x = 20;
-      hello.y = 330;
+      const computeLeftOffset = () => {
+        const viewportWidth = window.innerWidth;
+        if (viewportWidth > 1351) return (viewportWidth - 1208) / 2 - 36;
+        if (viewportWidth > 1279) return 36;
+        if (viewportWidth > 1151) return (viewportWidth - 1008) / 2 - 36;
+        if (viewportWidth > 767) return 36;
+        if (viewportWidth > 611) return (viewportWidth - 612) / 2;
+        return 0;
+      };
+
+      const computeRightOffset = () => {
+        const viewportWidth = window.innerWidth;
+        if (viewportWidth > 767) return 16;
+        if (viewportWidth > 611) return (viewportWidth - 612) / 2;
+        return 0;
+      };
+
+      const computeHelloX = () => {
+        const canvasWidth = app.renderer.width;
+        return canvasWidth * 0.05 + computeLeftOffset();
+      };
+
+      const computeFriendX = () => {
+        const canvasWidth = app.renderer.width;
+        const x =
+          canvasWidth * 0.94 -
+          scaleFontSize(window.innerWidth) * 3 -
+          computeRightOffset();
+        return x;
+      };
+
+      const computeImX = () => {
+        const canvasWidth = app.renderer.width;
+        const x = canvasWidth * 0.12 + computeLeftOffset();
+        return x;
+      };
+
+      const computeDaniX = () => {
+        const canvasWidth = app.renderer.width;
+        const x =
+          canvasWidth -
+          scaleFontSize(window.innerWidth) * 2.3 -
+          computeRightOffset();
+        return x;
+      };
+
+      const computeHelloY = () =>
+        window.innerHeight * 0.6 - scaleFontSize(window.innerWidth);
+
+      const computeFriendY = () =>
+        window.innerHeight * 0.7 - scaleFontSize(window.innerWidth);
+
+      const computeImY = () =>
+        window.innerHeight * 0.8 - scaleFontSize(window.innerWidth);
+
+      const computeDaniY = () =>
+        window.innerHeight * 0.82 - scaleFontSize(window.innerWidth);
+
+      hello.x = computeHelloX();
+      hello.y = computeHelloY();
       hello.rotation = (-10 * Math.PI) / 180;
 
-      friend.x = 170;
-      friend.y = 393;
+      friend.x = computeFriendX();
+      friend.y = computeFriendY();
       friend.rotation = (3 * Math.PI) / 180;
 
-      im.x = 47;
-      im.y = 470;
+      im.x = computeImX();
+      im.y = computeImY();
 
-      dani.x = 242;
-      dani.y = 484;
+      dani.x = computeDaniX();
+      dani.y = computeDaniY();
 
       const textBodies = [
         {
@@ -422,6 +508,31 @@ export default function Home() {
       for (const body of textBodies) {
         getCachedLocalBounds(body.sprite);
       }
+
+      const helloBody = textBodies[0];
+      const friendBody = textBodies[1];
+      const imBody = textBodies[2];
+      const daniBody = textBodies[3];
+
+      updateTextFontSizes = () => {
+        const fontSize = scaleFontSize(window.innerWidth);
+        textStyle.fontSize = fontSize;
+        friendTextStyle.fontSize = fontSize;
+        for (const body of textBodies) {
+          textLocalBoundsCache.delete(body.sprite);
+        }
+      };
+
+      updateTextPositions = () => {
+        helloBody.targetX = computeHelloX();
+        helloBody.targetY = computeHelloY();
+        friendBody.targetX = computeFriendX();
+        friendBody.targetY = computeFriendY();
+        imBody.targetX = computeImX();
+        imBody.targetY = computeImY();
+        daniBody.targetX = computeDaniX();
+        daniBody.targetY = computeDaniY();
+      };
 
       app.stage.addChild(
         circle,
@@ -611,6 +722,8 @@ export default function Home() {
           );
         }
 
+        const collisionsEnabled = true;
+
         for (const body of textBodies) {
           const text = body.sprite;
           const {
@@ -629,7 +742,7 @@ export default function Home() {
           const diffY = circle.y - nearestY;
           const distSq = diffX * diffX + diffY * diffY;
 
-          if (distSq < circleRadius * circleRadius) {
+          if (collisionsEnabled && distSq < circleRadius * circleRadius) {
             const dist = Math.max(0.0001, Math.sqrt(distSq));
             const normalX =
               distSq === 0 ? circle.x - rectCenterX : diffX / dist;
@@ -714,7 +827,7 @@ export default function Home() {
             const overlapX = Math.min(aRight, bRight) - Math.max(aLeft, bLeft);
             const overlapY = Math.min(aBottom, bBottom) - Math.max(aTop, bTop);
 
-            if (overlapX > 0 && overlapY > 0) {
+            if (collisionsEnabled && overlapX > 0 && overlapY > 0) {
               const aCenterX = aLeft + aSprite.width / 2;
               const aCenterY = aTop + aSprite.height / 2;
               const bCenterX = bLeft + bSprite.width / 2;
