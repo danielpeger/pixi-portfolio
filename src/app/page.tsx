@@ -947,7 +947,7 @@ export default function Home() {
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <div
           ref={containerRef}
-          className="bg-green-500 h-[92dvh] md:h-[min(92dvh,800px)] xl:h-[min(92dvh,960px)]"
+          className="bg-green-500 h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
