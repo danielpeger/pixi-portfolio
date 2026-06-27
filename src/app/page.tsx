@@ -127,28 +127,52 @@ export default function Home() {
       refreshCanvasBounds = () => {
         canvasBounds = app.canvas.getBoundingClientRect();
       };
-      const resizeToContainer = () => {
+      let lastRenderWidth = 0;
+      let lastRenderHeight = 0;
+      // Read-only: resizes the Pixi renderer to match the container's current
+      // box. The container's height is owned entirely by CSS, so this never
+      // writes the container's size and is safe to call from the
+      // ResizeObserver (writing it there caused the resize-loop flicker).
+      const syncRenderer = () => {
         const { width, height } = container.getBoundingClientRect();
         if (width > 0 && height > 0) {
-          app.renderer.resize(width, height);
-          const viewportHeight =
-            window.visualViewport?.height ??
-            window.innerHeight ??
-            document.documentElement.clientHeight;
-          container.style.height = `${Math.round(viewportHeight * 0.92)}px`;
-          refreshCanvasBounds();
-          positionFpsLabel();
-          updateTextFontSizes();
-          updateTextPositions();
+          const roundedWidth = Math.round(width);
+          const roundedHeight = Math.round(height);
+          if (
+            roundedWidth !== lastRenderWidth ||
+            roundedHeight !== lastRenderHeight
+          ) {
+            lastRenderWidth = roundedWidth;
+            lastRenderHeight = roundedHeight;
+            app.renderer.resize(roundedWidth, roundedHeight);
+            app.canvas.style.width = "100%";
+            app.canvas.style.height = "100%";
+            refreshCanvasBounds();
+            positionFpsLabel();
+            updateTextFontSizes();
+            updateTextPositions();
+          }
         }
       };
 
-      resizeToContainer();
-      resizeObserver = new ResizeObserver(resizeToContainer);
+      // Coalesce bursts of resize callbacks into a single read-only sync per
+      // frame.
+      let resizeRafId: number | null = null;
+      const scheduleSync = () => {
+        if (resizeRafId !== null) return;
+        resizeRafId = window.requestAnimationFrame(() => {
+          resizeRafId = null;
+          if (!isMounted) return;
+          syncRenderer();
+        });
+      };
+
+      syncRenderer();
+      resizeObserver = new ResizeObserver(scheduleSync);
       resizeObserver.observe(container);
       handleWindowResize = () => {
         refreshCanvasBounds();
-        resizeToContainer();
+        scheduleSync();
       };
       handleWindowScroll = () => refreshCanvasBounds();
       window.addEventListener("resize", handleWindowResize);
@@ -916,7 +940,7 @@ export default function Home() {
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <div
           ref={containerRef}
-          className="bg-green-500 h-[80vh] md:h-[calc(100vh+72px)] md:max-h-[800px] xl:max-h-[960px]"
+          className="bg-green-500 h-[92dvh] md:h-[min(92dvh,800px)] xl:h-[min(92dvh,960px)]"
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
