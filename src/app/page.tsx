@@ -450,22 +450,22 @@ export default function Home() {
       };
 
       const computeYMultiplier = (base: number) =>
-        window.innerWidth > 767 ? base : base + 0.035;
+        window.innerWidth > 767 ? base : base + 0.045;
 
       const computeHelloY = () =>
-        window.innerHeight * computeYMultiplier(0.6) -
+        window.innerHeight * computeYMultiplier(0.58) -
         scaleFontSize(window.innerWidth);
 
       const computeFriendY = () =>
-        window.innerHeight * computeYMultiplier(0.7) -
+        window.innerHeight * computeYMultiplier(0.66) -
         scaleFontSize(window.innerWidth);
 
       const computeImY = () =>
-        window.innerHeight * computeYMultiplier(0.8) -
+        window.innerHeight * computeYMultiplier(0.78) -
         scaleFontSize(window.innerWidth);
 
       const computeDaniY = () =>
-        window.innerHeight * computeYMultiplier(0.82) -
+        window.innerHeight * computeYMultiplier(0.835) -
         scaleFontSize(window.innerWidth);
 
       hello.x = computeHelloX();
