@@ -956,7 +956,7 @@ export default function Home() {
             A design engineer trying to put the{" "}
             <span className="italic">soft</span> in software. <br />
             I'm based in Budapest, sharing life with my wife and our tabby cat.
-            10 years of experience in product design, and currently pursuing a
+            I've been in product design since 2016, and I'm currently pursuing a
             master’s in software engineering.
           </p>
         </div>
