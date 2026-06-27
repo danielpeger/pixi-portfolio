@@ -96,7 +96,7 @@ export default function Home() {
         fontSize: initialFontSize,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
-        trim: false,
+        trim: true,
       });
       const friendTextStyle = new TextStyle({
         fill: textColor,
@@ -527,14 +527,64 @@ export default function Home() {
         }
         return bounds;
       };
-      const getCollisionBounds = (sprite: Text) => {
+      // Oriented bounding box (OBB) derived from the sprite's local glyph
+      // bounds plus its rotation, so the collision box tracks the rotated
+      // visuals exactly instead of using an upright axis-aligned rectangle.
+      const getObb = (sprite: Text) => {
         const bounds = getCachedLocalBounds(sprite);
+        const cos = Math.cos(sprite.rotation);
+        const sin = Math.sin(sprite.rotation);
+        const localCenterX = bounds.x + bounds.width / 2;
+        const localCenterY = bounds.y + bounds.height / 2;
         return {
-          left: sprite.x + bounds.x,
-          top: sprite.y + bounds.y,
-          right: sprite.x + bounds.x + bounds.width,
-          bottom: sprite.y + bounds.y + bounds.height,
+          cx: sprite.x + cos * localCenterX - sin * localCenterY,
+          cy: sprite.y + sin * localCenterX + cos * localCenterY,
+          // Local x/y axes expressed in world space.
+          axX: cos,
+          axY: sin,
+          ayX: -sin,
+          ayY: cos,
+          hw: bounds.width / 2,
+          hh: bounds.height / 2,
         };
+      };
+
+      // Separating Axis Theorem between two OBBs. Returns the minimum
+      // translation vector (unit normal pointing from b toward a) and the
+      // penetration depth, or null when they don't overlap.
+      const obbCollision = (
+        a: ReturnType<typeof getObb>,
+        b: ReturnType<typeof getObb>,
+      ) => {
+        const axes = [
+          { x: a.axX, y: a.axY },
+          { x: a.ayX, y: a.ayY },
+          { x: b.axX, y: b.axY },
+          { x: b.ayX, y: b.ayY },
+        ];
+        const dcx = a.cx - b.cx;
+        const dcy = a.cy - b.cy;
+        let minOverlap = Infinity;
+        let nx = 0;
+        let ny = 0;
+        for (const axis of axes) {
+          const ra =
+            Math.abs(a.axX * axis.x + a.axY * axis.y) * a.hw +
+            Math.abs(a.ayX * axis.x + a.ayY * axis.y) * a.hh;
+          const rb =
+            Math.abs(b.axX * axis.x + b.axY * axis.y) * b.hw +
+            Math.abs(b.ayX * axis.x + b.ayY * axis.y) * b.hh;
+          const centerProj = dcx * axis.x + dcy * axis.y;
+          const overlap = ra + rb - Math.abs(centerProj);
+          if (overlap <= 0) return null;
+          if (overlap < minOverlap) {
+            minOverlap = overlap;
+            const sign = centerProj < 0 ? -1 : 1;
+            nx = axis.x * sign;
+            ny = axis.y * sign;
+          }
+        }
+        return { nx, ny, overlap: minOverlap };
       };
       for (const body of textBodies) {
         getCachedLocalBounds(body.sprite);
@@ -757,34 +807,45 @@ export default function Home() {
 
         for (const body of textBodies) {
           const text = body.sprite;
-          const {
-            left: rectLeft,
-            top: rectTop,
-            right: rectRight,
-            bottom: rectBottom,
-          } = getCollisionBounds(text);
-          const rectCenterX = (rectLeft + rectRight) / 2;
-          const rectCenterY = (rectTop + rectBottom) / 2;
+          const bounds = getCachedLocalBounds(text);
+          const left = bounds.x;
+          const top = bounds.y;
+          const right = bounds.x + bounds.width;
+          const bottom = bounds.y + bounds.height;
 
-          const nearestX = Math.max(rectLeft, Math.min(circle.x, rectRight));
-          const nearestY = Math.max(rectTop, Math.min(circle.y, rectBottom));
+          const cos = Math.cos(text.rotation);
+          const sin = Math.sin(text.rotation);
 
-          const diffX = circle.x - nearestX;
-          const diffY = circle.y - nearestY;
+          // Transform the circle center into the text's local (unrotated)
+          // frame so the rectangle test matches the rotated glyphs exactly.
+          const relX = circle.x - text.x;
+          const relY = circle.y - text.y;
+          const localCX = relX * cos + relY * sin;
+          const localCY = -relX * sin + relY * cos;
+
+          const nearestX = Math.max(left, Math.min(localCX, right));
+          const nearestY = Math.max(top, Math.min(localCY, bottom));
+
+          const diffX = localCX - nearestX;
+          const diffY = localCY - nearestY;
           const distSq = diffX * diffX + diffY * diffY;
 
           if (collisionsEnabled && distSq < circleRadius * circleRadius) {
             const dist = Math.max(0.0001, Math.sqrt(distSq));
-            const normalX =
-              distSq === 0 ? circle.x - rectCenterX : diffX / dist;
-            const normalY =
-              distSq === 0 ? circle.y - rectCenterY : diffY / dist;
-            const normalLength = Math.max(
+            let localNX =
+              distSq === 0 ? localCX - (left + right) / 2 : diffX / dist;
+            let localNY =
+              distSq === 0 ? localCY - (top + bottom) / 2 : diffY / dist;
+            const localNLength = Math.max(
               0.0001,
-              Math.sqrt(normalX * normalX + normalY * normalY),
+              Math.sqrt(localNX * localNX + localNY * localNY),
             );
-            const nx = normalX / normalLength;
-            const ny = normalY / normalLength;
+            localNX /= localNLength;
+            localNY /= localNLength;
+
+            // Rotate the contact normal back into world space.
+            const nx = cos * localNX - sin * localNY;
+            const ny = sin * localNX + cos * localNY;
 
             const overlap = circleRadius - dist;
             const totalMass = circleMass + body.mass;
@@ -838,68 +899,38 @@ export default function Home() {
           for (let j = i + 1; j < textBodies.length; j += 1) {
             const a = textBodies[i];
             const b = textBodies[j];
+            if (!collisionsEnabled) continue;
+
+            const collision = obbCollision(getObb(a.sprite), getObb(b.sprite));
+            if (!collision) continue;
+
+            const { nx, ny, overlap: separation } = collision;
             const aSprite = a.sprite;
             const bSprite = b.sprite;
 
-            const {
-              left: aLeft,
-              top: aTop,
-              right: aRight,
-              bottom: aBottom,
-            } = getCollisionBounds(aSprite);
+            const totalMass = a.mass + b.mass;
+            const aMove = separation * (b.mass / totalMass);
+            const bMove = separation * (a.mass / totalMass);
 
-            const {
-              left: bLeft,
-              top: bTop,
-              right: bRight,
-              bottom: bBottom,
-            } = getCollisionBounds(bSprite);
+            aSprite.x += nx * aMove;
+            aSprite.y += ny * aMove;
+            bSprite.x -= nx * bMove;
+            bSprite.y -= ny * bMove;
 
-            const overlapX = Math.min(aRight, bRight) - Math.max(aLeft, bLeft);
-            const overlapY = Math.min(aBottom, bBottom) - Math.max(aTop, bTop);
+            const relVelX = a.vx - b.vx;
+            const relVelY = a.vy - b.vy;
+            const velAlongNormal = relVelX * nx + relVelY * ny;
 
-            if (collisionsEnabled && overlapX > 0 && overlapY > 0) {
-              const aCenterX = aLeft + aSprite.width / 2;
-              const aCenterY = aTop + aSprite.height / 2;
-              const bCenterX = bLeft + bSprite.width / 2;
-              const bCenterY = bTop + bSprite.height / 2;
+            if (velAlongNormal < 0) {
+              const restitution = 0.35;
+              const impulse =
+                (-(1 + restitution) * velAlongNormal) /
+                (1 / a.mass + 1 / b.mass);
 
-              let nx = 0;
-              let ny = 0;
-              let separation = 0;
-
-              if (overlapX < overlapY) {
-                separation = overlapX;
-                nx = aCenterX < bCenterX ? -1 : 1;
-              } else {
-                separation = overlapY;
-                ny = aCenterY < bCenterY ? -1 : 1;
-              }
-
-              const totalMass = a.mass + b.mass;
-              const aMove = separation * (b.mass / totalMass);
-              const bMove = separation * (a.mass / totalMass);
-
-              aSprite.x += nx * aMove;
-              aSprite.y += ny * aMove;
-              bSprite.x -= nx * bMove;
-              bSprite.y -= ny * bMove;
-
-              const relVelX = a.vx - b.vx;
-              const relVelY = a.vy - b.vy;
-              const velAlongNormal = relVelX * nx + relVelY * ny;
-
-              if (velAlongNormal < 0) {
-                const restitution = 0.35;
-                const impulse =
-                  (-(1 + restitution) * velAlongNormal) /
-                  (1 / a.mass + 1 / b.mass);
-
-                a.vx += (impulse / a.mass) * nx;
-                a.vy += (impulse / a.mass) * ny;
-                b.vx -= (impulse / b.mass) * nx;
-                b.vy -= (impulse / b.mass) * ny;
-              }
+              a.vx += (impulse / a.mass) * nx;
+              a.vy += (impulse / a.mass) * ny;
+              b.vx -= (impulse / b.mass) * nx;
+              b.vy -= (impulse / b.mass) * ny;
             }
           }
         }
