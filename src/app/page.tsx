@@ -449,17 +449,24 @@ export default function Home() {
         return x;
       };
 
+      const computeYMultiplier = (base: number) =>
+        window.innerWidth > 767 ? base : base + 0.035;
+
       const computeHelloY = () =>
-        window.innerHeight * 0.6 - scaleFontSize(window.innerWidth);
+        window.innerHeight * computeYMultiplier(0.6) -
+        scaleFontSize(window.innerWidth);
 
       const computeFriendY = () =>
-        window.innerHeight * 0.7 - scaleFontSize(window.innerWidth);
+        window.innerHeight * computeYMultiplier(0.7) -
+        scaleFontSize(window.innerWidth);
 
       const computeImY = () =>
-        window.innerHeight * 0.8 - scaleFontSize(window.innerWidth);
+        window.innerHeight * computeYMultiplier(0.8) -
+        scaleFontSize(window.innerWidth);
 
       const computeDaniY = () =>
-        window.innerHeight * 0.82 - scaleFontSize(window.innerWidth);
+        window.innerHeight * computeYMultiplier(0.82) -
+        scaleFontSize(window.innerWidth);
 
       hello.x = computeHelloX();
       hello.y = computeHelloY();
@@ -947,9 +954,9 @@ export default function Home() {
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
           <p>
             A design engineer trying to put the{" "}
-            <span className="italic">soft</span> back in software. <br />
-            Based in Budapest, sharing life with my wife and our tabby cat. 10
-            years of experience in product design, and currently pursuing a
+            <span className="italic">soft</span> in software. <br />
+            I'm based in Budapest, sharing life with my wife and our tabby cat.
+            10 years of experience in product design, and currently pursuing a
             master’s in software engineering.
           </p>
         </div>
