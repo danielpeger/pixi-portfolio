@@ -457,7 +457,7 @@ export default function Home() {
         scaleFontSize(window.innerWidth);
 
       const computeFriendY = () =>
-        window.innerHeight * computeYMultiplier(0.66) -
+        window.innerHeight * computeYMultiplier(0.675) -
         scaleFontSize(window.innerWidth);
 
       const computeImY = () =>
@@ -985,10 +985,10 @@ export default function Home() {
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
           <p>
             A design engineer trying to put the{" "}
-            <span className="italic">soft</span> in software. <br />
-            I'm based in Budapest, sharing life with my wife and our tabby cat.
-            I've been in product design since 2016, and I'm currently pursuing a
-            master’s in software engineering.
+            <span className="italic">soft</span> in software. I'm based in
+            Budapest, sharing life with my wife and our tabby cat. I've been in
+            product design since 2016, and I'm currently pursuing a master’s in
+            software engineering.
           </p>
         </div>
       </section>
