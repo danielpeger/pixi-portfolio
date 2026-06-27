@@ -82,7 +82,7 @@ export default function Home() {
         }
 
         // Jumps to 114 at 1280 and above.
-        return 114;
+        return 110;
       };
 
       const initialFontSize = scaleFontSize(window.innerWidth);
@@ -381,9 +381,9 @@ export default function Home() {
 
       const computeLeftOffset = () => {
         const viewportWidth = window.innerWidth;
-        if (viewportWidth > 1351) return (viewportWidth - 1208) / 2 - 36;
+        if (viewportWidth > 1351) return (viewportWidth - 1208) / 2 - 72;
         if (viewportWidth > 1279) return 36;
-        if (viewportWidth > 1151) return (viewportWidth - 1008) / 2 - 36;
+        if (viewportWidth > 1151) return (viewportWidth - 1008) / 2 - 72;
         if (viewportWidth > 767) return 36;
         if (viewportWidth > 611) return (viewportWidth - 612) / 2;
         return 0;
@@ -391,7 +391,7 @@ export default function Home() {
 
       const computeRightOffset = () => {
         const viewportWidth = window.innerWidth;
-        if (viewportWidth > 767) return 16;
+        if (viewportWidth > 767) return 36;
         if (viewportWidth > 611) return (viewportWidth - 612) / 2;
         return 0;
       };
