@@ -22,7 +22,6 @@ export default function Home() {
     let handleOrientation: (event: DeviceOrientationEvent) => void = () =>
       undefined;
     let enableGyroOnPointer: () => void = () => undefined;
-    let positionFpsLabel: () => void = () => undefined;
     let handlePointerMove: (event: PointerEvent) => void = () => undefined;
     let handlePointerLeave: () => void = () => undefined;
     let refreshCanvasBounds: () => void = () => undefined;
@@ -105,22 +104,6 @@ export default function Home() {
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
         trim: true,
       });
-      const fpsText = new Text({
-        text: "FPS: --",
-        style: new TextStyle({
-          fill: textColor,
-          fontSize: 16,
-          fontWeight: "600",
-          fontFamily: '"SF Pro Text", system-ui, sans-serif',
-        }),
-      });
-      fpsText.anchor.set(1, 0);
-      positionFpsLabel = () => {
-        fpsText.x = app.renderer.width - 16;
-        fpsText.y = 12;
-      };
-      positionFpsLabel();
-
       const circleRadius = 65;
       const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
       let canvasBounds = app.canvas.getBoundingClientRect();
@@ -148,7 +131,6 @@ export default function Home() {
             app.canvas.style.width = "100%";
             app.canvas.style.height = "100%";
             refreshCanvasBounds();
-            positionFpsLabel();
             updateTextFontSizes();
             updateTextPositions();
           }
@@ -623,11 +605,8 @@ export default function Home() {
         friend,
         im,
         dani,
-        fpsText,
       );
 
-      let fpsElapsed = 0;
-      const fpsUpdateInterval = 0.05;
       app.ticker.add((ticker) => {
         const rawDelta = ticker.deltaTime;
         const delta = rawDelta;
@@ -647,12 +626,6 @@ export default function Home() {
         const circleSquashMax = 2;
         const circleSquashVelocityScale = 0.09;
         const stretchFactor = 1.4;
-
-        fpsElapsed += ticker.deltaMS / 1000;
-        if (fpsElapsed >= fpsUpdateInterval) {
-          fpsText.text = `FPS: ${Math.round(ticker.FPS)}`;
-          fpsElapsed = 0;
-        }
 
         if (!gyroEnabled || !hasOrientationData) {
           if (!isHandheld) {
