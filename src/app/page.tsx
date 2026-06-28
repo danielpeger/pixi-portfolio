@@ -189,7 +189,7 @@ export default function Home() {
       hand.x = 28;
       hand.y = 31;
       let handFadeElapsed = 0;
-      const handFadeDelay = 1;
+      const handFadeDelay = 1.5;
       const handFadeDuration = 0.5;
       let handEnabledElapsed = 0;
       const handEnabledHold = 3;
@@ -432,22 +432,22 @@ export default function Home() {
       };
 
       const computeYMultiplier = (base: number) =>
-        window.innerWidth > 767 ? base + 0.03 : base + 0.045;
+        window.innerWidth > 767 ? base : base + 0.02;
 
       const computeHelloY = () =>
-        window.innerHeight * computeYMultiplier(0.58) -
+        app.renderer.height * computeYMultiplier(0.66) -
         scaleFontSize(window.innerWidth);
 
       const computeFriendY = () =>
-        window.innerHeight * computeYMultiplier(0.675) -
+        app.renderer.height * computeYMultiplier(0.775) -
         scaleFontSize(window.innerWidth);
 
       const computeImY = () =>
-        window.innerHeight * computeYMultiplier(0.78) -
+        app.renderer.height * computeYMultiplier(0.88) -
         scaleFontSize(window.innerWidth);
 
       const computeDaniY = () =>
-        window.innerHeight * computeYMultiplier(0.835) -
+        app.renderer.height * computeYMultiplier(0.94) -
         scaleFontSize(window.innerWidth);
 
       hello.x = computeHelloX();
