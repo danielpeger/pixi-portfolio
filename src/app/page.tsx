@@ -104,7 +104,7 @@ export default function Home() {
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
         trim: true,
       });
-      const circleRadius = 65;
+      let circleRadius = initialFontSize * 0.6;
       const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
       let canvasBounds = app.canvas.getBoundingClientRect();
       refreshCanvasBounds = () => {
@@ -432,7 +432,7 @@ export default function Home() {
       };
 
       const computeYMultiplier = (base: number) =>
-        window.innerWidth > 767 ? base : base + 0.045;
+        window.innerWidth > 767 ? base + 0.03 : base + 0.045;
 
       const computeHelloY = () =>
         window.innerHeight * computeYMultiplier(0.58) -
@@ -584,6 +584,8 @@ export default function Home() {
         for (const body of textBodies) {
           textLocalBoundsCache.delete(body.sprite);
         }
+        circleRadius = fontSize * 0.6;
+        circle.clear().circle(0, 0, circleRadius).fill("0xffcc00");
       };
 
       updateTextPositions = () => {
@@ -597,15 +599,7 @@ export default function Home() {
         daniBody.targetY = computeDaniY();
       };
 
-      app.stage.addChild(
-        circle,
-        hand,
-        handLabel,
-        hello,
-        friend,
-        im,
-        dani,
-      );
+      app.stage.addChild(circle, hand, handLabel, hello, friend, im, dani);
 
       app.ticker.add((ticker) => {
         const rawDelta = ticker.deltaTime;
