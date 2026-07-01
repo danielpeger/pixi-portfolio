@@ -685,16 +685,27 @@ export default function Home() {
         const cursorRadius = 6;
         // Extra gap past physical contact at which the cursor swaps to "flick".
         // 0 = swap exactly when the cursor touches the circle.
-        const cursorFlickGap = 2;
+        const cursorFlickGap = 0;
         // Minimum time (seconds) the "flick" hand stays after switching.
         const cursorFlickMinHold = 0.4;
         const cursorKickScale = 0.003;
+        // How much the cursor's own approach speed influences the kick given to
+        // the ball. 0 = every collision imparts the same reference kick no
+        // matter how fast the cursor moved; 1 = fully proportional to speed
+        // (the old behaviour). Lower values make slow and fast hits push the
+        // ball a more similar amount.
+        const cursorKickVelocityInfluence = 0.9;
+        // Approach speed (px/s) a collision is normalised toward, so a gentle
+        // touch and a hard flick land near this baseline push.
+        const cursorKickReferenceSpeed = 15000;
         const cursorSquashScale = 0.25;
         const cursorSquashSpeedRef = 800;
         const textSpring = 0.008;
         const squashDecay = 0.5;
         const squashRise = 0.13;
-        const circleSquashMax = 2;
+        // Cap on how far the circle can squash. Desktop uses a lower ceiling
+        // so cursor flicks and bounces deform the ball less than on mobile.
+        const circleSquashMax = isHandheld ? 2 : 1.4;
         const circleSquashVelocityScale = 0.09;
         const stretchFactor = 1.4;
 
@@ -786,9 +797,18 @@ export default function Home() {
             const velAlongNormal = relVelX * nx + relVelY * ny;
             if (velAlongNormal < 0) {
               const restitution = 0.2;
-              const kick = (1 + restitution) * velAlongNormal * cursorKickScale;
-              velocityX -= kick * nx;
-              velocityY -= kick * ny;
+              // Blend the actual approach speed toward a fixed reference so the
+              // kick depends far less on how fast the cursor was moving.
+              const approachSpeed = -velAlongNormal;
+              const softenedSpeed = Math.max(
+                0,
+                cursorKickReferenceSpeed +
+                  (approachSpeed - cursorKickReferenceSpeed) *
+                    cursorKickVelocityInfluence,
+              );
+              const kick = (1 + restitution) * softenedSpeed * cursorKickScale;
+              velocityX += kick * nx;
+              velocityY += kick * ny;
               const pointerSpeed = Math.hypot(pointerVX, pointerVY);
               const speedScale = Math.min(
                 1,
