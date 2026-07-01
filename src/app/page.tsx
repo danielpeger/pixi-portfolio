@@ -682,6 +682,20 @@ export default function Home() {
         const textDamping = 0.968;
         const textBounce = 1.07;
         const maxVelocity = 40;
+        // Restitution >1 adds energy on impact, which is what makes the ball
+        // feel lively — but it also makes it buzz when wedged in a tight spot,
+        // where it collides many times per second at tiny speeds. So keep the
+        // full lively bounce for genuine (fast) impacts, and fade toward an
+        // energy-losing restitution for gentle contacts so the ball settles
+        // instead of jiggling. Approach speed (px/frame) at which the full
+        // bounce kicks in; below it, restitution eases down to bounceLow.
+        const bounceLow = 0.6;
+        const bounceFullSpeed = 2;
+        const restitutionForSpeed = (speed: number, high: number) => {
+          const t = Math.min(1, speed / bounceFullSpeed);
+          const eased = t * t * (3 - 2 * t);
+          return bounceLow + (high - bounceLow) * eased;
+        };
         const circleMass = 1;
         const cursorRadius = 6;
         // Extra gap past physical contact at which the cursor swaps to "flick".
@@ -719,7 +733,6 @@ export default function Home() {
               scaleFontSize(window.innerWidth) *
               (700 / app.renderer.height) *
               (1 - lerpT);
-            console.log(tiltX);
             tiltY = 0.3 * (1 - lerpT) + idleTiltStartY;
           } else {
             tiltX = idleTiltStartX;
@@ -846,7 +859,8 @@ export default function Home() {
 
         if (circle.x < circleRadius) {
           circle.x = circleRadius;
-          velocityX = Math.abs(velocityX) * bounce;
+          const speed = Math.abs(velocityX);
+          velocityX = speed * restitutionForSpeed(speed, bounce);
           circleSquashTargetX = Math.max(
             circleSquashTargetX,
             Math.min(
@@ -856,7 +870,8 @@ export default function Home() {
           );
         } else if (circle.x > maxX) {
           circle.x = maxX;
-          velocityX = -Math.abs(velocityX) * bounce;
+          const speed = Math.abs(velocityX);
+          velocityX = -speed * restitutionForSpeed(speed, bounce);
           circleSquashTargetX = Math.max(
             circleSquashTargetX,
             Math.min(
@@ -868,7 +883,8 @@ export default function Home() {
 
         if (circle.y < circleRadius) {
           circle.y = circleRadius;
-          velocityY = Math.abs(velocityY) * bounce;
+          const speed = Math.abs(velocityY);
+          velocityY = speed * restitutionForSpeed(speed, bounce);
           circleSquashTargetY = Math.max(
             circleSquashTargetY,
             Math.min(
@@ -878,7 +894,8 @@ export default function Home() {
           );
         } else if (circle.y > maxY) {
           circle.y = maxY;
-          velocityY = -Math.abs(velocityY) * bounce;
+          const speed = Math.abs(velocityY);
+          velocityY = -speed * restitutionForSpeed(speed, bounce);
           circleSquashTargetY = Math.max(
             circleSquashTargetY,
             Math.min(
@@ -947,7 +964,10 @@ export default function Home() {
             const velAlongNormal = relVelX * nx + relVelY * ny;
 
             if (velAlongNormal < 0) {
-              const restitution = textBounce;
+              const restitution = restitutionForSpeed(
+                -velAlongNormal,
+                textBounce,
+              );
               const impulse =
                 (-(1 + restitution) * velAlongNormal) /
                 (1 / circleMass + 1 / body.mass);
