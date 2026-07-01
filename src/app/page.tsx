@@ -81,7 +81,7 @@ export default function Home() {
         }
 
         // Jumps to 114 at 1280 and above.
-        return 110;
+        return 108;
       };
 
       const initialFontSize = scaleFontSize(window.innerWidth);
@@ -178,6 +178,20 @@ export default function Home() {
         src: "/tilt.svg",
         data: {
           scale: handRasterScale,
+          resolution: window.devicePixelRatio || 1,
+        },
+      });
+      const holdTexture = await Assets.load({
+        src: "/hold.svg",
+        data: {
+          scale: 4,
+          resolution: window.devicePixelRatio || 1,
+        },
+      });
+      const flickTexture = await Assets.load({
+        src: "/flick.svg",
+        data: {
+          scale: 4,
           resolution: window.devicePixelRatio || 1,
         },
       });
@@ -335,12 +349,26 @@ export default function Home() {
         handLabel.visible = false;
       }
 
+      const cursor = new Sprite(holdTexture);
+      cursor.anchor.set(0.5);
+      const cursorSize = 28;
+      cursor.scale.set(cursorSize / cursor.texture.height);
+      cursor.visible = false;
+      cursor.eventMode = "none";
+      // The extended finger points straight up in the source SVG, so rotating
+      // by (angleToBall + 90deg) makes the fingertip aim at the yellow circle.
+      const cursorPointOffset = Math.PI / 2;
+      // Swaps to the "flick" hand while the cursor is near the circle.
+      let cursorIsFlick = false;
+      let cursorFlickElapsed = 0;
+
       handlePointerMove = (event: PointerEvent) => {
         const x = event.clientX - canvasBounds.left;
         const y = event.clientY - canvasBounds.top;
         pointerX = x;
         pointerY = y;
         pointerActive = true;
+        cursor.visible = true;
         const now = performance.now();
         if (lastPointerTime > 0) {
           const dt = Math.max(0.001, (now - lastPointerTime) / 1000);
@@ -356,9 +384,15 @@ export default function Home() {
         pointerActive = false;
         pointerVX = 0;
         pointerVY = 0;
+        cursor.visible = false;
       };
 
       if (!isHandheld) {
+        // Pixi's EventSystem rewrites the canvas cursor style on every pointer
+        // move, so setting `canvas.style.cursor` alone gets overwritten. Set the
+        // EventSystem's default cursor so the native pointer stays hidden.
+        app.renderer.events.cursorStyles.default = "none";
+        app.canvas.style.cursor = "none";
         app.canvas.addEventListener("pointermove", handlePointerMove);
         app.canvas.addEventListener("pointerdown", handlePointerMove);
         app.canvas.addEventListener("pointerleave", handlePointerLeave);
@@ -404,7 +438,7 @@ export default function Home() {
 
       const computeHelloX = () => {
         const canvasWidth = app.renderer.width;
-        return canvasWidth * 0.05 + computeLeftOffset();
+        return computeTextXProximity(canvasWidth * 0.05 + computeLeftOffset());
       };
 
       const computeFriendX = () => {
@@ -413,13 +447,13 @@ export default function Home() {
           canvasWidth * 0.94 -
           scaleFontSize(window.innerWidth) * 3 -
           computeRightOffset();
-        return x;
+        return computeTextXProximity(x);
       };
 
       const computeImX = () => {
         const canvasWidth = app.renderer.width;
         const x = canvasWidth * 0.12 + computeLeftOffset();
-        return x;
+        return computeTextXProximity(x);
       };
 
       const computeDaniX = () => {
@@ -428,27 +462,56 @@ export default function Home() {
           canvasWidth -
           scaleFontSize(window.innerWidth) * 2.3 -
           computeRightOffset();
-        return x;
+        return computeTextXProximity(x);
       };
 
       const computeYMultiplier = (base: number) =>
         window.innerWidth > 767 ? base : base + 0.02;
 
-      const computeHelloY = () =>
-        app.renderer.height * computeYMultiplier(0.66) -
-        scaleFontSize(window.innerWidth);
+      // As the canvas gets taller, ease the text lines slightly closer
+      // together. At/below the reference height the spacing stays fully
+      // proportional (matching the original layout); above it the vertical
+      // gaps grow slower than the canvas so the block tightens up.
+      const textSpacingReferenceHeight = 600;
+      // 0 = no compression (fully proportional), 1 = constant pixel gaps.
+      const textSpacingStrength = 0.3;
+      // Anchor around the block's vertical center so it holds position while
+      // it tightens.
+      const textSpacingAnchor = 0.75;
 
-      const computeFriendY = () =>
-        app.renderer.height * computeYMultiplier(0.775) -
-        scaleFontSize(window.innerWidth);
+      const computeTextSpacingScale = () => {
+        const height = app.renderer.height;
+        if (height <= textSpacingReferenceHeight) return 1;
+        const constant = textSpacingReferenceHeight / height;
+        return 1 - textSpacingStrength + constant * textSpacingStrength;
+      };
 
-      const computeImY = () =>
-        app.renderer.height * computeYMultiplier(0.88) -
-        scaleFontSize(window.innerWidth);
+      // Apply the same height-based factor horizontally: as the canvas gets
+      // taller, pull each x toward the canvas center so the columns tighten up.
+      const computeTextXProximity = (x: number) => {
+        const center = app.renderer.width / 2;
+        return center + (x - center) * computeTextSpacingScale();
+      };
 
-      const computeDaniY = () =>
-        app.renderer.height * computeYMultiplier(0.94) -
-        scaleFontSize(window.innerWidth);
+      const computeLineY = (base: number) => {
+        const height = app.renderer.height;
+        const anchor = computeYMultiplier(textSpacingAnchor);
+        const multiplier = computeYMultiplier(base);
+        const scale = computeTextSpacingScale();
+        return (
+          height * anchor +
+          (multiplier - anchor) * height * scale -
+          scaleFontSize(window.innerWidth)
+        );
+      };
+
+      const computeHelloY = () => computeLineY(0.66);
+
+      const computeFriendY = () => computeLineY(0.76);
+
+      const computeImY = () => computeLineY(0.88);
+
+      const computeDaniY = () => computeLineY(0.94);
 
       hello.x = computeHelloX();
       hello.y = computeHelloY();
@@ -599,7 +662,16 @@ export default function Home() {
         daniBody.targetY = computeDaniY();
       };
 
-      app.stage.addChild(circle, hand, handLabel, hello, friend, im, dani);
+      app.stage.addChild(
+        circle,
+        hand,
+        handLabel,
+        hello,
+        friend,
+        im,
+        dani,
+        cursor,
+      );
 
       app.ticker.add((ticker) => {
         const rawDelta = ticker.deltaTime;
@@ -611,7 +683,12 @@ export default function Home() {
         const maxVelocity = 40;
         const circleMass = 1;
         const cursorRadius = 6;
-        const cursorKickScale = 0.005;
+        // Extra gap past physical contact at which the cursor swaps to "flick".
+        // 0 = swap exactly when the cursor touches the circle.
+        const cursorFlickGap = 2;
+        // Minimum time (seconds) the "flick" hand stays after switching.
+        const cursorFlickMinHold = 0.4;
+        const cursorKickScale = 0.003;
         const cursorSquashScale = 0.25;
         const cursorSquashSpeedRef = 800;
         const textSpring = 0.008;
@@ -681,6 +758,21 @@ export default function Home() {
           const dy = circle.y - pointerY;
           const minDist = circleRadius + cursorRadius;
           const distSq = dx * dx + dy * dy;
+
+          const flickDist = circleRadius + cursorRadius + cursorFlickGap;
+          const withinFlickRange = distSq < flickDist * flickDist;
+          if (withinFlickRange && !cursorIsFlick) {
+            cursorIsFlick = true;
+            cursorFlickElapsed = 0;
+            cursor.texture = flickTexture;
+          } else if (cursorIsFlick) {
+            cursorFlickElapsed += ticker.deltaMS / 1000;
+            if (!withinFlickRange && cursorFlickElapsed >= cursorFlickMinHold) {
+              cursorIsFlick = false;
+              cursor.texture = holdTexture;
+            }
+          }
+
           if (distSq < minDist * minDist) {
             const dist = Math.max(0.0001, Math.sqrt(distSq));
             const nx = dx / dist;
@@ -919,6 +1011,14 @@ export default function Home() {
           1 - circleSquashX + circleSquashY * stretchFactor,
           1 - circleSquashY + circleSquashX * stretchFactor,
         );
+
+        if (!isHandheld && pointerActive) {
+          cursor.x = pointerX;
+          cursor.y = pointerY;
+          cursor.rotation =
+            Math.atan2(circle.y - pointerY, circle.x - pointerX) +
+            cursorPointOffset;
+        }
       });
     };
 
