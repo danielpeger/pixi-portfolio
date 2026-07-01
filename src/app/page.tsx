@@ -159,12 +159,6 @@ export default function Home() {
       handleWindowScroll = () => refreshCanvasBounds();
       window.addEventListener("resize", handleWindowResize);
       window.addEventListener("scroll", handleWindowScroll, { passive: true });
-      circle.x = 20 + circleRadius;
-      circle.y = 16 + circleRadius;
-      let circleSquashX = 0;
-      let circleSquashY = 0;
-      let circleSquashTargetX = 0;
-      let circleSquashTargetY = 0;
       const handTargetSize = 24;
       const handRasterScale = Math.max(2, Math.ceil(handTargetSize / 25));
       const handTexture = await Assets.load({
@@ -227,7 +221,7 @@ export default function Home() {
       let tiltX = 0;
       let tiltY = 0;
       let idleTiltElapsed = 0;
-      const idleTiltDuration = 4;
+      const idleTiltDuration = 2.5;
       const idleTiltStartX = 0.15;
       const idleTiltStartY = 0.5;
       let baseGamma: number | null = null;
@@ -527,6 +521,13 @@ export default function Home() {
       dani.x = computeDaniX();
       dani.y = computeDaniY();
 
+      circle.x = computeHelloX();
+      circle.y = 16 + circleRadius;
+      let circleSquashX = 0;
+      let circleSquashY = 0;
+      let circleSquashTargetX = 0;
+      let circleSquashTargetY = 0;
+
       const textBodies = [
         {
           sprite: hello,
@@ -694,10 +695,10 @@ export default function Home() {
         // matter how fast the cursor moved; 1 = fully proportional to speed
         // (the old behaviour). Lower values make slow and fast hits push the
         // ball a more similar amount.
-        const cursorKickVelocityInfluence = 0.9;
+        const cursorKickVelocityInfluence = 0.5;
         // Approach speed (px/s) a collision is normalised toward, so a gentle
         // touch and a hard flick land near this baseline push.
-        const cursorKickReferenceSpeed = 15000;
+        const cursorKickReferenceSpeed = 8000;
         const cursorSquashScale = 0.25;
         const cursorSquashSpeedRef = 800;
         const textSpring = 0.008;
@@ -705,7 +706,7 @@ export default function Home() {
         const squashRise = 0.13;
         // Cap on how far the circle can squash. Desktop uses a lower ceiling
         // so cursor flicks and bounces deform the ball less than on mobile.
-        const circleSquashMax = isHandheld ? 2 : 1.4;
+        const circleSquashMax = isHandheld ? 2 : 1.2;
         const circleSquashVelocityScale = 0.09;
         const stretchFactor = 1.4;
 
@@ -713,8 +714,13 @@ export default function Home() {
           if (!isHandheld) {
             idleTiltElapsed += ticker.deltaMS / 1000;
             const lerpT = Math.min(1, idleTiltElapsed / idleTiltDuration);
-            tiltX = idleTiltStartX * (1 - lerpT);
-            tiltY = idleTiltStartY * (1 - lerpT);
+            tiltX =
+              0.006 *
+              scaleFontSize(window.innerWidth) *
+              (700 / app.renderer.height) *
+              (1 - lerpT);
+            console.log(tiltX);
+            tiltY = 0.3 * (1 - lerpT) + idleTiltStartY;
           } else {
             tiltX = idleTiltStartX;
             tiltY = idleTiltStartY;
