@@ -713,14 +713,14 @@ export default function Home() {
         // Approach speed (px/s) a collision is normalised toward, so a gentle
         // touch and a hard flick land near this baseline push.
         const cursorKickReferenceSpeed = 8000;
-        const cursorSquashScale = 0.25;
+        const cursorSquashScale = 1;
         const cursorSquashSpeedRef = 800;
         const textSpring = 0.008;
         const squashDecay = 0.5;
         const squashRise = 0.13;
         // Cap on how far the circle can squash. Desktop uses a lower ceiling
         // so cursor flicks and bounces deform the ball less than on mobile.
-        const circleSquashMax = isHandheld ? 2 : 1.2;
+        const circleSquashMax = isHandheld ? 2 : 1;
         const circleSquashVelocityScale = 0.09;
         const stretchFactor = 1.4;
 
