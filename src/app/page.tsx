@@ -527,6 +527,7 @@ export default function Home() {
       let circleSquashY = 0;
       let circleSquashTargetX = 0;
       let circleSquashTargetY = 0;
+      let squashAccumulator = 0;
 
       const textBodies = [
         {
@@ -689,8 +690,8 @@ export default function Home() {
         // energy-losing restitution for gentle contacts so the ball settles
         // instead of jiggling. Approach speed (px/frame) at which the full
         // bounce kicks in; below it, restitution eases down to bounceLow.
-        const bounceLow = 0.6;
-        const bounceFullSpeed = 2;
+        const bounceLow = 0.01;
+        const bounceFullSpeed = 4;
         const restitutionForSpeed = (speed: number, high: number) => {
           const t = Math.min(1, speed / bounceFullSpeed);
           const eased = t * t * (3 - 2 * t);
@@ -714,15 +715,29 @@ export default function Home() {
         // touch and a hard flick land near this baseline push.
         const cursorKickReferenceSpeed = 8000;
         const cursorSquashScale = 1;
-        const cursorSquashSpeedRef = 800;
+        const cursorSquashSpeedRef = 1;
         const textSpring = 0.008;
         const squashDecay = 0.5;
         const squashRise = 0.13;
+        // The squash envelope runs on a fixed 60fps clock (see below), so this
+        // is the wall-clock length of one simulated squash step.
+        const squashStepMS = 1000 / 60;
         // Cap on how far the circle can squash. Desktop uses a lower ceiling
         // so cursor flicks and bounces deform the ball less than on mobile.
-        const circleSquashMax = isHandheld ? 2 : 1;
+        const circleSquashMax = isHandheld ? 2 : 0.8;
         const circleSquashVelocityScale = 0.09;
         const stretchFactor = 1.4;
+
+        // The decay constants above are tuned for 60fps, where they run once
+        // per frame (delta === 1). Applying them once per frame at any other
+        // rate makes decay time-dependent: a lower FPS (e.g. Safari) runs
+        // fewer decay steps per second, so the ball keeps more velocity and
+        // moves/bounces faster. Raising each factor to the `delta` power keeps
+        // the decay-per-second constant while leaving 60fps behaviour
+        // untouched (x ** 1 === x).
+        const frameDamping = Math.pow(damping, delta);
+        const frameTextDamping = Math.pow(textDamping, delta);
+        const framePointerDamping = Math.pow(0.9, delta);
 
         if (!gyroEnabled || !hasOrientationData) {
           if (!isHandheld) {
@@ -775,8 +790,8 @@ export default function Home() {
         handLabel.alpha = handAlpha;
         handLabel.visible = handMode !== "hidden";
 
-        velocityX = (velocityX + tiltX * delta) * damping;
-        velocityY = (velocityY + tiltY * delta) * damping;
+        velocityX = (velocityX + tiltX * delta) * frameDamping;
+        velocityY = (velocityY + tiltY * delta) * frameDamping;
         velocityX = Math.max(-maxVelocity, Math.min(maxVelocity, velocityX));
         velocityY = Math.max(-maxVelocity, Math.min(maxVelocity, velocityY));
 
@@ -850,8 +865,8 @@ export default function Home() {
               );
             }
           }
-          pointerVX *= 0.9;
-          pointerVY *= 0.9;
+          pointerVX *= framePointerDamping;
+          pointerVY *= framePointerDamping;
         }
 
         const maxX = app.renderer.width - circleRadius;
@@ -994,8 +1009,8 @@ export default function Home() {
 
           body.vx += (body.targetX - text.x) * textSpring * delta;
           body.vy += (body.targetY - text.y) * textSpring * delta;
-          body.vx *= textDamping;
-          body.vy *= textDamping;
+          body.vx *= frameTextDamping;
+          body.vy *= frameTextDamping;
           text.x += body.vx * delta;
           text.y += body.vy * delta;
         }
@@ -1040,18 +1055,35 @@ export default function Home() {
           }
         }
 
-        if (circleSquashTargetX > 0.0001) {
-          circleSquashTargetX *= squashDecay;
-        } else {
-          circleSquashTargetX = 0;
+        // The squash is a two-stage transient: an impact bumps the target up,
+        // the target decays, and the visible squash chases it via a lerp. What
+        // you see is the PEAK of that chase, which depends on how many times
+        // the chase samples the target before it decays away. Per-unit-time
+        // rate matching (Math.pow) does NOT preserve that peak, so a higher FPS
+        // squashes harder and a lower FPS softer. Stepping the envelope on a
+        // fixed 60fps clock reproduces the exact 60fps response at any frame
+        // rate. The step cap guards against a huge catch-up burst after a stall.
+        squashAccumulator += ticker.deltaMS;
+        let squashSteps = 0;
+        while (squashAccumulator >= squashStepMS && squashSteps < 6) {
+          squashAccumulator -= squashStepMS;
+          squashSteps += 1;
+          if (circleSquashTargetX > 0.0001) {
+            circleSquashTargetX *= squashDecay;
+          } else {
+            circleSquashTargetX = 0;
+          }
+          if (circleSquashTargetY > 0.0001) {
+            circleSquashTargetY *= squashDecay;
+          } else {
+            circleSquashTargetY = 0;
+          }
+          circleSquashX += (circleSquashTargetX - circleSquashX) * squashRise;
+          circleSquashY += (circleSquashTargetY - circleSquashY) * squashRise;
         }
-        if (circleSquashTargetY > 0.0001) {
-          circleSquashTargetY *= squashDecay;
-        } else {
-          circleSquashTargetY = 0;
+        if (squashSteps === 6) {
+          squashAccumulator = 0;
         }
-        circleSquashX += (circleSquashTargetX - circleSquashX) * squashRise;
-        circleSquashY += (circleSquashTargetY - circleSquashY) * squashRise;
 
         circle.scale.set(
           1 - circleSquashX + circleSquashY * stretchFactor,
@@ -1097,11 +1129,10 @@ export default function Home() {
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
           <p>
-            A design engineer trying to put the{" "}
-            <span className="italic">soft</span> in software. I'm based in
-            Budapest, sharing life with my wife and our tabby cat. I've been in
-            product design since 2016, and I'm currently pursuing a master’s in
-            software engineering.
+            A design engineer who puts the <span className="italic">soft</span>{" "}
+            in software. <br /> Based in Budapest, sharing life with my wife and
+            our tabby cat. Been in product design since 2016, and currently
+            pursuing a master’s in software engineering.
           </p>
         </div>
       </section>
