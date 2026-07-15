@@ -33,6 +33,8 @@ export default function Home() {
     let isMounted = true;
 
     const init = async () => {
+      const softPushEnabled =
+        new URLSearchParams(window.location.search).get("softpush") !== "off";
       const prefersDark = window.matchMedia?.(
         "(prefers-color-scheme: dark)",
       )?.matches;
@@ -679,9 +681,9 @@ export default function Home() {
         const rawDelta = ticker.deltaTime;
         const delta = rawDelta;
         const damping = 0.968;
-        const bounce = 1.07;
+        const bounce = softPushEnabled ? 1 : 1.07;
         const textDamping = 0.968;
-        const textBounce = 1.07;
+        const textBounce = softPushEnabled ? 1 : 1.07;
         const maxVelocity = 40;
         // Restitution >1 adds energy on impact, which is what makes the ball
         // feel lively — but it also makes it buzz when wedged in a tight spot,
@@ -710,10 +712,17 @@ export default function Home() {
         // matter how fast the cursor moved; 1 = fully proportional to speed
         // (the old behaviour). Lower values make slow and fast hits push the
         // ball a more similar amount.
-        const cursorKickVelocityInfluence = 0.5;
+        const cursorKickVelocityInfluence = softPushEnabled ? 0.25 : 0.5;
         // Approach speed (px/s) a collision is normalised toward, so a gentle
         // touch and a hard flick land near this baseline push.
         const cursorKickReferenceSpeed = 8000;
+        // When the ball is nearly still and the cursor creeps in slowly, skip
+        // the reference-floor kick and nudge with a soft push instead. Juggling
+        // still uses the normal kick whenever the ball has real speed.
+        // Disable with ?softpush=off.
+        const softPushBallMax = 6;
+        const softPushCursorMax = 680;
+        const softPushScale = 0.022;
         const cursorSquashScale = 1;
         const cursorSquashSpeedRef = 1;
         const textSpring = 0.008;
@@ -831,19 +840,28 @@ export default function Home() {
             const velAlongNormal = relVelX * nx + relVelY * ny;
             if (velAlongNormal < 0) {
               const restitution = 0.2;
-              // Blend the actual approach speed toward a fixed reference so the
-              // kick depends far less on how fast the cursor was moving.
               const approachSpeed = -velAlongNormal;
-              const softenedSpeed = Math.max(
-                0,
-                cursorKickReferenceSpeed +
-                  (approachSpeed - cursorKickReferenceSpeed) *
-                    cursorKickVelocityInfluence,
-              );
-              const kick = (1 + restitution) * softenedSpeed * cursorKickScale;
+              const ballSpeed = Math.hypot(velocityX, velocityY);
+              const pointerSpeed = Math.hypot(pointerVX, pointerVY);
+              // Soft nudge for a near-still ball + very slow cursor; otherwise
+              // keep the reference-floor kick so a stationary hand still
+              // juggles a moving ball.
+              const softPush =
+                softPushEnabled &&
+                ballSpeed < softPushBallMax &&
+                pointerSpeed < softPushCursorMax;
+              const kick = softPush
+                ? (1 + restitution) * approachSpeed * softPushScale
+                : (1 + restitution) *
+                  Math.max(
+                    0,
+                    cursorKickReferenceSpeed +
+                      (approachSpeed - cursorKickReferenceSpeed) *
+                        cursorKickVelocityInfluence,
+                  ) *
+                  cursorKickScale;
               velocityX += kick * nx;
               velocityY += kick * ny;
-              const pointerSpeed = Math.hypot(pointerVX, pointerVY);
               const speedScale = Math.min(
                 1,
                 pointerSpeed / cursorSquashSpeedRef,
@@ -854,7 +872,8 @@ export default function Home() {
                   Math.abs(velAlongNormal) * circleSquashVelocityScale,
                 ) *
                 cursorSquashScale *
-                speedScale;
+                speedScale *
+                (softPush ? softPushScale : 1);
               circleSquashTargetX = Math.max(
                 circleSquashTargetX,
                 impact * Math.abs(nx),
