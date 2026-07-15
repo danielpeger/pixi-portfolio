@@ -716,13 +716,14 @@ export default function Home() {
         // Approach speed (px/s) a collision is normalised toward, so a gentle
         // touch and a hard flick land near this baseline push.
         const cursorKickReferenceSpeed = 8000;
-        // When the ball is nearly still and the cursor creeps in slowly, skip
-        // the reference-floor kick and nudge with a soft push instead. Juggling
-        // still uses the normal kick whenever the ball has real speed.
-        // Disable with ?softpush=off.
-        const softPushBallMax = 6;
-        const softPushCursorMax = 680;
-        const softPushScale = 0.022;
+        // Softness scales continuously with how slow the ball and cursor are.
+        // At 0 speed → fully soft (approach-proportional nudge); at/above these
+        // caps → fully hard (reference-floor kick). Softness is the product of
+        // both factors, so a moving ball still gets a full kick from a
+        // stationary hand (juggling). Disable with ?softpush=off.
+        const softPushBallMax = 10;
+        const softPushCursorMax = 2000;
+        const softPushScale = 0.001;
         const cursorSquashScale = 1;
         const cursorSquashSpeedRef = 1;
         const textSpring = 0.008;
@@ -843,23 +844,25 @@ export default function Home() {
               const approachSpeed = -velAlongNormal;
               const ballSpeed = Math.hypot(velocityX, velocityY);
               const pointerSpeed = Math.hypot(pointerVX, pointerVY);
-              // Soft nudge for a near-still ball + very slow cursor; otherwise
-              // keep the reference-floor kick so a stationary hand still
-              // juggles a moving ball.
-              const softPush =
-                softPushEnabled &&
-                ballSpeed < softPushBallMax &&
-                pointerSpeed < softPushCursorMax;
-              const kick = softPush
-                ? (1 + restitution) * approachSpeed * softPushScale
-                : (1 + restitution) *
-                  Math.max(
-                    0,
-                    cursorKickReferenceSpeed +
-                      (approachSpeed - cursorKickReferenceSpeed) *
-                        cursorKickVelocityInfluence,
-                  ) *
-                  cursorKickScale;
+              // 1 = fully soft nudge, 0 = full reference-floor kick. Product of
+              // ball + cursor softness so either being fast restores a kick.
+              const softT = softPushEnabled
+                ? (1 - Math.min(1, ballSpeed / softPushBallMax)) *
+                  (1 - Math.min(1, pointerSpeed / softPushCursorMax))
+                : 0;
+              const softFactor = softT * softT * (3 - 2 * softT);
+              const hardKick =
+                (1 + restitution) *
+                Math.max(
+                  0,
+                  cursorKickReferenceSpeed +
+                    (approachSpeed - cursorKickReferenceSpeed) *
+                      cursorKickVelocityInfluence,
+                ) *
+                cursorKickScale;
+              const softKick =
+                (1 + restitution) * approachSpeed * softPushScale;
+              const kick = softKick * softFactor + hardKick * (1 - softFactor);
               velocityX += kick * nx;
               velocityY += kick * ny;
               const speedScale = Math.min(
@@ -873,7 +876,7 @@ export default function Home() {
                 ) *
                 cursorSquashScale *
                 speedScale *
-                (softPush ? softPushScale : 1);
+                (1 - softFactor + softFactor * softPushScale);
               circleSquashTargetX = Math.max(
                 circleSquashTargetX,
                 impact * Math.abs(nx),
