@@ -2,7 +2,7 @@ import PixiSketch from "@/components/PixiSketch";
 
 export default function Home() {
   return (
-    <main className="flex flex-col flex-wrap content-between h-[5000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:md:order-2 text-lg md:text-base xl:text-xl">
+    <main className="flex flex-col flex-wrap content-between h-[5000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:order-2 text-lg md:text-base xl:text-xl">
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <PixiSketch className="bg-green-500 h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]" />
       </section>
@@ -38,7 +38,7 @@ export default function Home() {
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
           <h3 className="pb-2 text-xl xl:text-2xl">Some stuff I built</h3>
-          <div className="w-full bg-yellow-100 aspect-[5/4] rounded-[20px]"></div>
+          <div className="w-full bg-accent-muted aspect-5/4 rounded-[20px]"></div>
           <p>
             In 2019 I was part of the team rethinking navigation on the Kinja
             platform. This is the story of how we used an iterative
@@ -49,7 +49,7 @@ export default function Home() {
       </section>
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <div className="px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0">
-          <div className="w-full bg-yellow-100 aspect-[5/4] rounded-[20px]"></div>
+          <div className="w-full bg-accent-muted aspect-5/4 rounded-[20px]"></div>
           <p>
             Index.hu is the highest-traffic online news outlet in Hungary. I
             spent 2 years at Index, working on user research, design,
