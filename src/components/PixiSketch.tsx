@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Application,
   Assets,
@@ -9,6 +9,8 @@ import {
   Text,
   TextStyle,
 } from "pixi.js";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 import {
   computeDaniX,
   computeDaniY,
@@ -58,6 +60,7 @@ function writeGyroDenied(denied: boolean) {
 
 export default function PixiSketch({ className }: PixiSketchProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -542,6 +545,12 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         cursor,
       );
 
+      if (!isMounted) {
+        if (app.renderer) app.destroy(true);
+        return;
+      }
+      setReady(true);
+
       // Tuned constants — hoisted out of the ticker so they aren't rebuilt
       // sixty times a second.
       const damping = 0.968;
@@ -969,6 +978,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
 
     return () => {
       isMounted = false;
+      setReady(false);
       if (resizeRafId !== null) {
         window.cancelAnimationFrame(resizeRafId);
       }
@@ -995,5 +1005,13 @@ export default function PixiSketch({ className }: PixiSketchProps) {
     };
   }, []);
 
-  return <div ref={containerRef} className={className} />;
+  return (
+    <div ref={containerRef} className={cn("relative", className)}>
+      {!ready && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
+          <Spinner className="size-6" />
+        </div>
+      )}
+    </div>
+  );
 }

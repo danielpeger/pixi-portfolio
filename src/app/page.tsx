@@ -6,15 +6,14 @@ export default function Home() {
   return (
     <main className="flex flex-col flex-wrap content-between h-[5000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:order-2 text-lg md:text-base xl:text-xl">
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
-        <PixiSketch className="bg-green-500 h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]" />
+        <PixiSketch className="h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]" />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
           <p>
             A design engineer who puts the <span className="italic">soft</span>{" "}
-            in software. <br /> Based in Budapest, sharing life with my wife and
-            our tabby cat. Been in product design since 2016, and currently
-            pursuing a master’s in software engineering.
+            in software. <br /> Worked as a product designer since 2016,
+            currently pursuing a master’s in software engineering.
           </p>
         </div>
       </section>
@@ -39,7 +38,9 @@ export default function Home() {
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
-          <h3 className="pb-2 text-xl xl:text-2xl">Some stuff I built</h3>
+          <h3 className="pb-2 text-xl xl:text-2xl">
+            Projects I'm most proud of
+          </h3>
           <div className="w-full bg-accent-muted aspect-5/4 rounded-[20px]"></div>
           <p>
             In 2019 I was part of the team rethinking navigation on the Kinja
