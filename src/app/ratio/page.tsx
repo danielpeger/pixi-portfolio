@@ -5,7 +5,10 @@ export default function RatioPage() {
   return (
     <main className="px-8 md:px-[72px] py-16 max-w-[960px] mx-auto">
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
-      <div className="relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden mb-8">
+      <div
+        data-vt="ratio-image"
+        className="ratio-hero relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden mb-8"
+      >
         <Image
           src="/ratio.png"
           alt="Ratio"

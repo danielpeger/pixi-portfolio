@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import TransitionLink from "@/components/TransitionLink";
 import PixiSketch from "@/components/PixiSketch";
 
 export default function Home() {
@@ -50,11 +50,14 @@ export default function Home() {
         </div>
       </section>
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
-        <Link
+        <TransitionLink
           href="/ratio"
           className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0"
         >
-          <div className="relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden">
+          <div
+            data-vt="ratio-image"
+            className="relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden"
+          >
             <Image
               src="/ratio.png"
               alt="Ratio"
@@ -65,7 +68,7 @@ export default function Home() {
             />
           </div>
           <p>Ratio description</p>
-        </Link>
+        </TransitionLink>
       </section>
     </main>
   );

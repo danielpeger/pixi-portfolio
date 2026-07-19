@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Jua } from "next/font/google";
+import ViewTransitions from "@/components/ViewTransitions";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${jua.variable}`}>
-        {children}
+        <ViewTransitions>{children}</ViewTransitions>
       </body>
     </html>
   );

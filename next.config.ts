@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* View transitions are handled manually (HTTP 203 playlist style). */
 };
 
 export default nextConfig;

@@ -104,4 +104,85 @@
       color-scheme: dark;
     }
   }
+
+  /* Shared-element morph + quick root fade */
+  .ratio-hero {
+    view-transition-name: ratio-image;
+  }
+
+  :root {
+    /*
+     * Soft but lively — PixiSketch float with a clear bounce
+     * (overshoot + small return, then settle).
+     */
+    --vt-spring: cubic-bezier(0.14, 1.4, 0.32, 1);
+    --vt-spring-duration: 900ms;
+  }
+
+  @supports (animation-timing-function: linear(0, 1)) {
+    :root {
+      /* Underdamped: ~13% overshoot, soft undershoot, playful settle */
+      --vt-spring: linear(
+        0,
+        0.01 1%,
+        0.05 2.5%,
+        0.14 5%,
+        0.3 8.5%,
+        0.5 12.5%,
+        0.7 17%,
+        0.86 22%,
+        0.98 27%,
+        1.07 33%,
+        1.12 38%,
+        1.13 42%,
+        1.1 46%,
+        1.04 51%,
+        0.98 57%,
+        0.96 62%,
+        0.97 67%,
+        0.995 74%,
+        1.01 81%,
+        1.005 88%,
+        1
+      );
+    }
+  }
+
+  @keyframes vt-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vt-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  html.from-home.to-ratio::view-transition-group(ratio-image),
+  html.from-ratio.to-home::view-transition-group(ratio-image) {
+    animation-duration: var(--vt-spring-duration);
+    animation-timing-function: var(--vt-spring);
+    z-index: 1;
+  }
+
+  html.from-home.to-ratio::view-transition-old(root),
+  html.from-ratio.to-home::view-transition-old(root) {
+    animation: 120ms ease both vt-fade-out;
+  }
+
+  html.from-home.to-ratio::view-transition-new(root),
+  html.from-ratio.to-home::view-transition-new(root) {
+    animation: 120ms ease both vt-fade-in;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*),
+    ::view-transition-group(*) {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+    }
+  }
 }
