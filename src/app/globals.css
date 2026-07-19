@@ -208,8 +208,14 @@
     view-transition-name: ratio-image;
   }
 
+  .overview-hero {
+    view-transition-name: overview-image;
+  }
+
   html.from-home.to-ratio::view-transition-group(ratio-image),
-  html.from-ratio.to-home::view-transition-group(ratio-image) {
+  html.from-ratio.to-home::view-transition-group(ratio-image),
+  html.from-home.to-overview::view-transition-group(overview-image),
+  html.from-overview.to-home::view-transition-group(overview-image) {
     animation-duration: var(--vt-spring-duration);
     animation-timing-function: var(--vt-spring);
     z-index: 1;
