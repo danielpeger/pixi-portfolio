@@ -75,6 +75,9 @@ export default function PixiSketch({ className }: PixiSketchProps) {
     let handleWindowScroll: () => void = () => undefined;
     let updateTextFontSizes: () => void = () => undefined;
     let updateTextPositions: () => void = () => undefined;
+    let handleColorSchemeChange: (event: MediaQueryListEvent) => void = () =>
+      undefined;
+    let colorSchemeQuery: MediaQueryList | null = null;
     let resizeRafId: number | null = null;
 
     let isMounted = true;
@@ -82,11 +85,14 @@ export default function PixiSketch({ className }: PixiSketchProps) {
     const init = async () => {
       const softPushEnabled =
         new URLSearchParams(window.location.search).get("softpush") !== "off";
-      const prefersDark = window.matchMedia?.(
-        "(prefers-color-scheme: dark)",
-      )?.matches;
-      const backgroundColor = prefersDark ? 0x000000 : 0xffffff;
-      const textColor = prefersDark ? 0xffffff : 0x000000;
+      colorSchemeQuery =
+        window.matchMedia?.("(prefers-color-scheme: dark)") ?? null;
+      const themeColors = (dark: boolean) => ({
+        background: dark ? 0x000000 : 0xffffff,
+        text: dark ? 0xffffff : 0x000000,
+        tertiary: dark ? 0xdadadd : 0xc3c3c8,
+      });
+      const initialTheme = themeColors(colorSchemeQuery?.matches ?? false);
       const dpr = window.devicePixelRatio || 1;
       const isHandheld =
         window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
@@ -122,7 +128,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       // autoDensity's pixel height can't lag a frame (that lag was the blink).
       await app.init({
         resizeTo: container,
-        backgroundColor,
+        backgroundColor: initialTheme.background,
         resolution: dpr,
         autoDensity: true,
         powerPreference: "high-performance",
@@ -152,7 +158,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
 
       let cachedFontSize = scaleFontSize(window.innerWidth);
       const textStyle = new TextStyle({
-        fill: textColor,
+        fill: initialTheme.text,
         fontSize: cachedFontSize,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
@@ -237,7 +243,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       const handLabel = new Text({
         text: "Tap to enable gyroscope",
         style: new TextStyle({
-          fill: 0xc3c3c8,
+          fill: initialTheme.tertiary,
           fontSize: 20,
           fontWeight: "400",
           fontFamily:
@@ -247,6 +253,15 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       handLabel.alpha = 0;
       handLabel.x = hand.x + hand.width + 8;
       handLabel.y = hand.y - 2 + (hand.height - handLabel.height) / 2;
+
+      const applyTheme = (dark: boolean) => {
+        const colors = themeColors(dark);
+        app.renderer.background.color = colors.background;
+        textStyle.fill = colors.text;
+        handLabel.style.fill = colors.tertiary;
+      };
+      handleColorSchemeChange = (event) => applyTheme(event.matches);
+      colorSchemeQuery?.addEventListener("change", handleColorSchemeChange);
 
       let velocityX = 0;
       let velocityY = 0;
@@ -966,6 +981,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       app.canvas.removeEventListener("pointerout", handlePointerLeave);
       window.removeEventListener("resize", handleWindowResize);
       window.removeEventListener("scroll", handleWindowScroll);
+      colorSchemeQuery?.removeEventListener("change", handleColorSchemeChange);
       resizeObserver?.disconnect();
       app.destroy(true);
     };
