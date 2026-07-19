@@ -1,3 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
 import PixiSketch from "@/components/PixiSketch";
 
 export default function Home() {
@@ -48,14 +50,22 @@ export default function Home() {
         </div>
       </section>
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
-        <div className="px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0">
-          <div className="w-full bg-accent-muted aspect-5/4 rounded-[20px]"></div>
-          <p>
-            Index.hu is the highest-traffic online news outlet in Hungary. I
-            spent 2 years at Index, working on user research, design,
-            illustrations and motion graphics.
-          </p>
-        </div>
+        <Link
+          href="/ratio"
+          className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0"
+        >
+          <div className="relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden">
+            <Image
+              src="/ratio.png"
+              alt="Ratio"
+              fill
+              className="object-cover"
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 712px"
+            />
+          </div>
+          <p>Ratio description</p>
+        </Link>
       </section>
     </main>
   );

@@ -138,7 +138,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       app.canvas.style.touchAction = "manipulation";
 
       if (!isMounted) {
-        app.destroy(true);
+        if (app.renderer) app.destroy(true);
         return;
       }
 
@@ -152,7 +152,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       ] = await Promise.all([assetsPromise, fontsPromise]);
 
       if (!isMounted) {
-        app.destroy(true);
+        if (app.renderer) app.destroy(true);
         return;
       }
 
@@ -973,17 +973,25 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         window.cancelAnimationFrame(resizeRafId);
       }
       window.removeEventListener("deviceorientation", handleOrientation);
-      app.canvas.removeEventListener("click", enableGyroOnPointer);
-      app.canvas.removeEventListener("touchend", enableGyroOnPointer);
-      app.canvas.removeEventListener("pointermove", handlePointerMove);
-      app.canvas.removeEventListener("pointerdown", handlePointerMove);
-      app.canvas.removeEventListener("pointerleave", handlePointerLeave);
-      app.canvas.removeEventListener("pointerout", handlePointerLeave);
       window.removeEventListener("resize", handleWindowResize);
       window.removeEventListener("scroll", handleWindowScroll);
       colorSchemeQuery?.removeEventListener("change", handleColorSchemeChange);
       resizeObserver?.disconnect();
-      app.destroy(true);
+
+      // app.canvas throws if init never finished (Strict Mode remount / fast nav).
+      const canvas = app.renderer?.canvas as HTMLCanvasElement | undefined;
+      if (canvas) {
+        canvas.removeEventListener("click", enableGyroOnPointer);
+        canvas.removeEventListener("touchend", enableGyroOnPointer);
+        canvas.removeEventListener("pointermove", handlePointerMove);
+        canvas.removeEventListener("pointerdown", handlePointerMove);
+        canvas.removeEventListener("pointerleave", handlePointerLeave);
+        canvas.removeEventListener("pointerout", handlePointerLeave);
+      }
+
+      if (app.renderer) {
+        app.destroy(true);
+      }
     };
   }, []);
 
