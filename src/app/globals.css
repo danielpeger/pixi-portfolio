@@ -21,6 +21,8 @@
     --separator: oklch(0.9233 0.0067 286.27);
     --accent: oklch(0.8652 0.1768 90.38);
     --accent-muted: oklch(0.9781 0.0422 98.09);
+    --vt-spring: cubic-bezier(0.14, 1.4, 0.32, 1);
+    --vt-spring-duration: 900ms;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -33,78 +35,6 @@
       --accent: oklch(0.8652 0.1768 90.38);
       --accent-muted: oklch(0.3192 0.021 103.59);
     }
-  }
-
-  html,
-  body {
-    max-width: 100vw;
-    overflow-x: hidden;
-    box-sizing: content-box;
-  }
-
-  body {
-    color: var(--secondary-foreground);
-    background: var(--background);
-    font-family:
-      "SF Pro Rounded",
-      "SF Pro Text",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    color: var(--foreground);
-    font-family:
-      var(--font-jua),
-      "Jua",
-      "SF Pro Rounded",
-      "SF Pro Text",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
-  }
-
-  * {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    html {
-      color-scheme: dark;
-    }
-  }
-
-  /* Shared-element morph + quick root fade */
-  .ratio-hero {
-    view-transition-name: ratio-image;
-  }
-
-  :root {
-    --vt-spring: cubic-bezier(0.14, 1.4, 0.32, 1);
-    --vt-spring-duration: 900ms;
   }
 
   @supports (animation-timing-function: linear(0, 1)) {
@@ -215,16 +145,69 @@
     }
   }
 
-  @keyframes vt-fade-in {
-    from {
-      opacity: 0;
-    }
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: content-box;
   }
 
-  @keyframes vt-fade-out {
-    to {
-      opacity: 0;
+  body {
+    color: var(--secondary-foreground);
+    background: var(--background);
+    font-family:
+      "SF Pro Rounded",
+      "SF Pro Text",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--foreground);
+    font-family:
+      var(--font-jua),
+      "Jua",
+      "SF Pro Rounded",
+      "SF Pro Text",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html {
+      color-scheme: dark;
     }
+  }
+  .ratio-hero {
+    view-transition-name: ratio-image;
   }
 
   html.from-home.to-ratio::view-transition-group(ratio-image),
@@ -232,16 +215,6 @@
     animation-duration: var(--vt-spring-duration);
     animation-timing-function: var(--vt-spring);
     z-index: 1;
-  }
-
-  html.from-home.to-ratio::view-transition-old(root),
-  html.from-ratio.to-home::view-transition-old(root) {
-    animation: 120ms ease both vt-fade-out;
-  }
-
-  html.from-home.to-ratio::view-transition-new(root),
-  html.from-ratio.to-home::view-transition-new(root) {
-    animation: 120ms ease both vt-fade-in;
   }
 
   @media (prefers-reduced-motion: reduce) {
