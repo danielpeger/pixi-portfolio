@@ -23,11 +23,22 @@ export const ViewTransitionsContext =
   createContext<ViewTransitionsContextValue | null>(null);
 
 const VT_RATIO = "ratio-image";
+const VT_OVERVIEW = "overview-image";
+
+type SharedVtName = typeof VT_RATIO | typeof VT_OVERVIEW;
 
 function pageKind(path: string) {
   if (path === "/") return "home";
   if (path.startsWith("/ratio")) return "ratio";
+  if (path.startsWith("/overview")) return "overview";
   return "other";
+}
+
+function sharedVtForTransition(from: string, to: string): SharedVtName | null {
+  const kinds = new Set([pageKind(from), pageKind(to)]);
+  if (kinds.has("home") && kinds.has("ratio")) return VT_RATIO;
+  if (kinds.has("home") && kinds.has("overview")) return VT_OVERVIEW;
+  return null;
 }
 
 function clearVtClasses() {
@@ -43,17 +54,38 @@ function clearVtClasses() {
   }
 }
 
-function untagRatioElements() {
-  document.querySelectorAll<HTMLElement>(`[data-vt="${VT_RATIO}"]`).forEach((el) => {
-    // removeProperty so .ratio-hero can keep its CSS view-transition-name
+function untagSharedElements(name: SharedVtName) {
+  document.querySelectorAll<HTMLElement>(`[data-vt="${name}"]`).forEach((el) => {
+    // removeProperty so .*-hero can keep its CSS view-transition-name
     el.style.removeProperty("view-transition-name");
   });
 }
 
-function tagRatioElement(root: ParentNode = document) {
-  const el = root.querySelector<HTMLElement>(`[data-vt="${VT_RATIO}"]`);
-  if (el) el.style.viewTransitionName = VT_RATIO;
-  return el;
+function untagAllSharedElements() {
+  untagSharedElements(VT_RATIO);
+  untagSharedElements(VT_OVERVIEW);
+}
+
+function isVtVisible(el: HTMLElement) {
+  if (typeof el.checkVisibility === "function") {
+    return el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+  }
+  return el.getClientRects().length > 0;
+}
+
+/** Tag the visible shared image — keep-alive can leave multiple in the DOM. */
+function tagSharedElement(name: SharedVtName, root: ParentNode = document) {
+  const els = root.querySelectorAll<HTMLElement>(`[data-vt="${name}"]`);
+  let fallback: HTMLElement | null = null;
+  for (const el of els) {
+    if (isVtVisible(el)) {
+      el.style.viewTransitionName = name;
+      return el;
+    }
+    fallback = el;
+  }
+  if (fallback) fallback.style.viewTransitionName = name;
+  return fallback;
 }
 
 /**
@@ -115,9 +147,11 @@ export default function ViewTransitions({
       document.documentElement.classList.add("back-transition");
     }
 
+    const sharedVt = sharedVtForTransition(direction.from, direction.to);
+
     // Leaving home → tag the thumbnail so the old snapshot includes it.
-    if (pageKind(direction.from) === "home") {
-      tagRatioElement();
+    if (pageKind(direction.from) === "home" && sharedVt) {
+      tagSharedElement(sharedVt);
     }
 
     let pendingViewTransitionResolve: () => void;
@@ -133,7 +167,7 @@ export default function ViewTransitions({
 
       transition.finished.finally(() => {
         clearVtClasses();
-        untagRatioElements();
+        untagAllSharedElements();
       });
     });
 
@@ -190,11 +224,23 @@ export default function ViewTransitions({
       // Demo quirk: scroll position isn't applied until after a microtask.
       await Promise.resolve();
 
-      // Returning home: tag the thumbnail so the new snapshot includes it.
-      if (pageKind(pathname) === "home") {
-        tagRatioElement();
-      } else if (pageKind(pathname) === "ratio") {
-        tagRatioElement();
+      // Clear keep-alive duplicates, then tag the visible shared image.
+      const kind = pageKind(pathname);
+      const sharedVt =
+        kind === "ratio"
+          ? VT_RATIO
+          : kind === "overview"
+            ? VT_OVERVIEW
+            : pendingDirection.current
+              ? sharedVtForTransition(
+                  pendingDirection.current.from,
+                  pendingDirection.current.to,
+                )
+              : null;
+
+      if (sharedVt && (kind === "home" || kind === "ratio" || kind === "overview")) {
+        untagAllSharedElements();
+        tagSharedElement(sharedVt);
       }
 
       void document.documentElement.offsetHeight;

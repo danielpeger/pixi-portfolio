@@ -34,6 +34,8 @@ import {
 
 type PixiSketchProps = {
   className?: string;
+  /** When false, the ticker pauses so a keep-alive mount doesn't burn CPU. */
+  active?: boolean;
 };
 
 const GYRO_DENIED_KEY = "gyroDenied";
@@ -58,15 +60,34 @@ function writeGyroDenied(denied: boolean) {
   }
 }
 
-export default function PixiSketch({ className }: PixiSketchProps) {
+export default function PixiSketch({
+  className,
+  active = true,
+}: PixiSketchProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const appRef = useRef<Application | null>(null);
+  const syncOnActivateRef = useRef<(() => void) | null>(null);
+  const activeRef = useRef(active);
+  activeRef.current = active;
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const app = appRef.current;
+    if (!app?.ticker) return;
+    if (active) {
+      app.ticker.start();
+      syncOnActivateRef.current?.();
+    } else {
+      app.ticker.stop();
+    }
+  }, [active]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const app = new Application();
+    appRef.current = app;
     let resizeObserver: ResizeObserver | null = null;
     let handleOrientation: (event: DeviceOrientationEvent) => void = () =>
       undefined;
@@ -220,6 +241,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       };
 
       syncRenderer();
+      syncOnActivateRef.current = scheduleSync;
       resizeObserver = new ResizeObserver(scheduleSync);
       resizeObserver.observe(container);
       handleWindowResize = () => {
@@ -550,6 +572,9 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         return;
       }
       setReady(true);
+      if (!activeRef.current) {
+        app.ticker.stop();
+      }
 
       // Tuned constants — hoisted out of the ticker so they aren't rebuilt
       // sixty times a second.
@@ -979,6 +1004,8 @@ export default function PixiSketch({ className }: PixiSketchProps) {
     return () => {
       isMounted = false;
       setReady(false);
+      appRef.current = null;
+      syncOnActivateRef.current = null;
       if (resizeRafId !== null) {
         window.cancelAnimationFrame(resizeRafId);
       }
@@ -1003,12 +1030,14 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         app.destroy(true);
       }
     };
+    // Intentionally mount-once: keep-alive toggles `active` via a separate effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       {!ready && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--background)] text-secondary-foreground">
           <Spinner className="size-6" />
         </div>
       )}

@@ -3,7 +3,16 @@
 @import "shadcn/tailwind.css";
 
 @theme inline {
+  --color-accent: var(--accent);
   --color-accent-muted: var(--accent-muted);
+  --color-foreground: var(--foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-separator: var(--separator);
+  --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+  --color-vt-spring: var(--vt-spring);
+  --color-vt-spring-duration: var(--vt-spring-duration);
 }
 
 @layer base {
@@ -22,7 +31,7 @@
     --tertiary-foreground: oklch(0.8187 0.0069 286.25);
     --separator: oklch(0.9233 0.0067 286.27);
     --accent: oklch(0.8652 0.1768 90.38);
-    --accent-muted: oklch(0.9781 0.0422 98.09);
+    --accent-muted: oklch(0.9873 0.0262 102.21);
     --vt-spring: cubic-bezier(0.14, 1.4, 0.32, 1);
     --vt-spring-duration: 900ms;
   }
@@ -33,9 +42,9 @@
       --foreground: oklch(1 0 0);
       --secondary-foreground: oklch(0.6347 0.0059 286.23);
       --tertiary-foreground: oklch(0.8892 0.0041 286.32);
-      --separator: oklch(0.9233 0.0067 286.27);
+      --separator: oklch(0.25 0.0067 286.27);
       --accent: oklch(0.8652 0.1768 90.38);
-      --accent-muted: oklch(0.3192 0.021 103.59);
+      --accent-muted: oklch(0.32 0.021 102);
     }
   }
 
@@ -157,16 +166,8 @@
   body {
     color: var(--secondary-foreground);
     background: var(--background);
-    font-family:
-      "SF Pro Rounded",
-      "SF Pro Text",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
+    font-family: var(--font-rubik), "Rubik", system-ui, sans-serif;
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -179,17 +180,12 @@
   h6 {
     color: var(--foreground);
     font-family:
-      var(--font-jua),
-      "Jua",
-      "SF Pro Rounded",
-      "SF Pro Text",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
+      var(--font-jua), "Jua", var(--font-rubik), "Rubik", system-ui, sans-serif;
+  }
+
+  em {
+    font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+    font-style: italic;
   }
 
   * {
@@ -212,8 +208,14 @@
     view-transition-name: ratio-image;
   }
 
+  .overview-hero {
+    view-transition-name: overview-image;
+  }
+
   html.from-home.to-ratio::view-transition-group(ratio-image),
-  html.from-ratio.to-home::view-transition-group(ratio-image) {
+  html.from-ratio.to-home::view-transition-group(ratio-image),
+  html.from-home.to-overview::view-transition-group(overview-image),
+  html.from-overview.to-home::view-transition-group(overview-image) {
     animation-duration: var(--vt-spring-duration);
     animation-timing-function: var(--vt-spring);
     z-index: 1;
