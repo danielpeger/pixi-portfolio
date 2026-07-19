@@ -9,10 +9,52 @@ import {
   Text,
   TextStyle,
 } from "pixi.js";
+import {
+  computeDaniX,
+  computeDaniY,
+  computeFriendX,
+  computeFriendY,
+  computeHelloX,
+  computeHelloY,
+  computeImX,
+  computeImY,
+  scaleFontSize,
+  type TextLayoutMetrics,
+} from "./pixi-sketch/layout";
+import {
+  getObb,
+  getRotationAxes,
+  isBodySettled,
+  obbCollision,
+  restitutionForSpeed,
+  type LocalBounds,
+} from "./pixi-sketch/physics";
 
 type PixiSketchProps = {
   className?: string;
 };
+
+const GYRO_DENIED_KEY = "gyroDenied";
+
+function readGyroDenied() {
+  try {
+    return window.localStorage.getItem(GYRO_DENIED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeGyroDenied(denied: boolean) {
+  try {
+    if (denied) {
+      window.localStorage.setItem(GYRO_DENIED_KEY, "true");
+    } else {
+      window.localStorage.removeItem(GYRO_DENIED_KEY);
+    }
+  } catch {
+    // Ignore storage failures.
+  }
+}
 
 export default function PixiSketch({ className }: PixiSketchProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -33,6 +75,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
     let handleWindowScroll: () => void = () => undefined;
     let updateTextFontSizes: () => void = () => undefined;
     let updateTextPositions: () => void = () => undefined;
+    let resizeRafId: number | null = null;
 
     let isMounted = true;
 
@@ -44,15 +87,46 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       )?.matches;
       const backgroundColor = prefersDark ? 0x000000 : 0xffffff;
       const textColor = prefersDark ? 0xffffff : 0x000000;
-      const initOptions: Record<string, unknown> = {
+      const dpr = window.devicePixelRatio || 1;
+      const isHandheld =
+        window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+
+      // Kick off network/decode work before (and during) app.init so fonts and
+      // SVGs overlap with WebGL setup instead of waiting in a waterfall.
+      const handTargetSize = 24;
+      const handRasterScale = Math.max(2, Math.ceil(handTargetSize / 25));
+      const assetsPromise = Promise.all([
+        Assets.load({
+          src: "/hand.svg",
+          data: { scale: handRasterScale, resolution: dpr },
+        }),
+        Assets.load({
+          src: "/tilt.svg",
+          data: { scale: handRasterScale, resolution: dpr },
+        }),
+        Assets.load({
+          src: "/hold.svg",
+          data: { scale: 4, resolution: dpr },
+        }),
+        Assets.load({
+          src: "/flick.svg",
+          data: { scale: 4, resolution: dpr },
+        }),
+      ]);
+      const fontsPromise = document.fonts
+        ? document.fonts.load('400 140px "Jua"')
+        : Promise.resolve();
+
+      // resizeTo keeps Pixi's backing store tied to the container; our own
+      // ResizeObserver + syncRenderer then re-asserts canvas CSS 100% so
+      // autoDensity's pixel height can't lag a frame (that lag was the blink).
+      await app.init({
         resizeTo: container,
         backgroundColor,
-        resolution: window.devicePixelRatio || 1,
+        resolution: dpr,
         autoDensity: true,
         powerPreference: "high-performance",
-      };
-
-      await app.init(initOptions as Parameters<typeof app.init>[0]);
+      });
 
       app.renderer.events.autoPreventDefault = false;
       app.canvas.style.touchAction = "manipulation";
@@ -67,50 +141,24 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       app.canvas.style.width = "100%";
       app.canvas.style.height = "100%";
 
-      const scaleFontSize = (viewportWidth: number) => {
-        // Single-column layout: scales up to the md breakpoint.
-        if (viewportWidth < 768) {
-          if (viewportWidth <= 320) return 66;
-          const t = (viewportWidth - 320) / (768 - 320);
-          return 66 + (114 - 66) * t;
-        }
+      const [
+        [handTexture, tiltTexture, holdTexture, flickTexture],
+      ] = await Promise.all([assetsPromise, fontsPromise]);
 
-        // Two-column layout: resets at md, then scales 66 -> 80 by 1152.
-        if (viewportWidth < 1152) {
-          const t = (viewportWidth - 768) / (1152 - 768);
-          return 66 + (90 - 66) * t;
-        }
-
-        // Holds at 80 until 1279.
-        if (viewportWidth < 1280) {
-          return 90;
-        }
-
-        // Jumps to 114 at 1280 and above.
-        return 108;
-      };
-
-      const initialFontSize = scaleFontSize(window.innerWidth);
-
-      if (document.fonts) {
-        await document.fonts.load('400 140px "Jua"');
+      if (!isMounted) {
+        app.destroy(true);
+        return;
       }
 
+      let cachedFontSize = scaleFontSize(window.innerWidth);
       const textStyle = new TextStyle({
         fill: textColor,
-        fontSize: initialFontSize,
+        fontSize: cachedFontSize,
         fontWeight: "400",
         fontFamily: '"Jua", Arial, Helvetica, sans-serif',
         trim: true,
       });
-      const friendTextStyle = new TextStyle({
-        fill: textColor,
-        fontSize: initialFontSize,
-        fontWeight: "400",
-        fontFamily: '"Jua", Arial, Helvetica, sans-serif',
-        trim: true,
-      });
-      let circleRadius = initialFontSize * 0.6;
+      let circleRadius = cachedFontSize * 0.6;
       const circle = new Graphics().circle(0, 0, circleRadius).fill("0xffcc00");
       let canvasBounds = app.canvas.getBoundingClientRect();
       refreshCanvasBounds = () => {
@@ -118,6 +166,14 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       };
       let lastRenderWidth = 0;
       let lastRenderHeight = 0;
+
+      const layoutMetrics = (): TextLayoutMetrics => ({
+        canvasWidth: app.renderer.width,
+        canvasHeight: app.renderer.height,
+        viewportWidth: window.innerWidth,
+        fontSize: cachedFontSize,
+      });
+
       // Read-only: resizes the Pixi renderer to match the container's current
       // box. The container's height is owned entirely by CSS, so this never
       // writes the container's size and is safe to call from the
@@ -145,7 +201,6 @@ export default function PixiSketch({ className }: PixiSketchProps) {
 
       // Coalesce bursts of resize callbacks into a single read-only sync per
       // frame.
-      let resizeRafId: number | null = null;
       const scheduleSync = () => {
         if (resizeRafId !== null) return;
         resizeRafId = window.requestAnimationFrame(() => {
@@ -165,36 +220,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       handleWindowScroll = () => refreshCanvasBounds();
       window.addEventListener("resize", handleWindowResize);
       window.addEventListener("scroll", handleWindowScroll, { passive: true });
-      const handTargetSize = 24;
-      const handRasterScale = Math.max(2, Math.ceil(handTargetSize / 25));
-      const handTexture = await Assets.load({
-        src: "/hand.svg",
-        data: {
-          scale: handRasterScale,
-          resolution: window.devicePixelRatio || 1,
-        },
-      });
-      const tiltTexture = await Assets.load({
-        src: "/tilt.svg",
-        data: {
-          scale: handRasterScale,
-          resolution: window.devicePixelRatio || 1,
-        },
-      });
-      const holdTexture = await Assets.load({
-        src: "/hold.svg",
-        data: {
-          scale: 4,
-          resolution: window.devicePixelRatio || 1,
-        },
-      });
-      const flickTexture = await Assets.load({
-        src: "/flick.svg",
-        data: {
-          scale: 4,
-          resolution: window.devicePixelRatio || 1,
-        },
-      });
+
       const hand = new Sprite(handTexture);
       const handSize = handTargetSize;
       hand.anchor.set(0);
@@ -255,7 +281,6 @@ export default function PixiSketch({ className }: PixiSketchProps) {
 
       let gyroEnabled = false;
       let gyroDenied = false;
-      const gyroDeniedKey = "gyroDenied";
       let handMode: "prompt" | "enabled" | "hidden" = "hidden";
       const enableGyro = async () => {
         if (typeof DeviceOrientationEvent === "undefined") return false;
@@ -270,11 +295,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
             if (permission !== "granted") {
               gyroDenied = true;
               handMode = "hidden";
-              try {
-                window.localStorage.setItem(gyroDeniedKey, "true");
-              } catch {
-                // Ignore storage failures.
-              }
+              writeGyroDenied(true);
               return false;
             }
           } catch (error) {
@@ -287,11 +308,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
             if (!notAllowed) {
               gyroDenied = true;
               handMode = "hidden";
-              try {
-                window.localStorage.setItem(gyroDeniedKey, "true");
-              } catch {
-                // Ignore storage failures.
-              }
+              writeGyroDenied(true);
             }
             return false;
           }
@@ -307,11 +324,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         handLabel.text = "Tilt phone to move ball";
         handLabel.x = hand.x + hand.width + 8;
         handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
-        try {
-          window.localStorage.removeItem(gyroDeniedKey);
-        } catch {
-          // Ignore storage failures.
-        }
+        writeGyroDenied(false);
         return true;
       };
 
@@ -322,18 +335,12 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           app.canvas.removeEventListener("touchend", enableGyroOnPointer);
         }
       };
-      const isHandheld =
-        window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
       const hasDeviceOrientation =
         isHandheld && typeof DeviceOrientationEvent !== "undefined";
       const needsTapToEnable =
         hasDeviceOrientation && "requestPermission" in DeviceOrientationEvent;
       if (hasDeviceOrientation) {
-        try {
-          gyroDenied = window.localStorage.getItem(gyroDeniedKey) === "true";
-        } catch {
-          // Ignore storage failures.
-        }
+        gyroDenied = readGyroDenied();
         const shouldPrompt = needsTapToEnable && !gyroDenied;
         handMode = shouldPrompt ? "prompt" : "hidden";
         hand.visible = shouldPrompt;
@@ -399,135 +406,27 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         app.canvas.addEventListener("pointerout", handlePointerLeave);
       }
 
-      const hello = new Text({
-        text: "Hello",
-        style: textStyle,
-      });
+      const hello = new Text({ text: "Hello", style: textStyle });
+      const friend = new Text({ text: "friend,", style: textStyle });
+      const im = new Text({ text: "I'm", style: textStyle });
+      const dani = new Text({ text: "Dani", style: textStyle });
 
-      const friend = new Text({
-        text: "friend,",
-        style: friendTextStyle,
-      });
-
-      const im = new Text({
-        text: "I'm",
-        style: textStyle,
-      });
-
-      const dani = new Text({
-        text: "Dani",
-        style: textStyle,
-      });
-
-      const computeLeftOffset = () => {
-        const viewportWidth = window.innerWidth;
-        if (viewportWidth > 1351) return (viewportWidth - 1208) / 2 - 72;
-        if (viewportWidth > 1279) return 36;
-        if (viewportWidth > 1151) return (viewportWidth - 1008) / 2 - 72;
-        if (viewportWidth > 767) return 36;
-        if (viewportWidth > 611) return (viewportWidth - 612) / 2;
-        return 0;
-      };
-
-      const computeRightOffset = () => {
-        const viewportWidth = window.innerWidth;
-        if (viewportWidth > 767) return 36;
-        if (viewportWidth > 611) return (viewportWidth - 612) / 2;
-        return 0;
-      };
-
-      const computeHelloX = () => {
-        const canvasWidth = app.renderer.width;
-        return computeTextXProximity(canvasWidth * 0.05 + computeLeftOffset());
-      };
-
-      const computeFriendX = () => {
-        const canvasWidth = app.renderer.width;
-        const x =
-          canvasWidth * 0.94 -
-          scaleFontSize(window.innerWidth) * 3 -
-          computeRightOffset();
-        return computeTextXProximity(x);
-      };
-
-      const computeImX = () => {
-        const canvasWidth = app.renderer.width;
-        const x = canvasWidth * 0.12 + computeLeftOffset();
-        return computeTextXProximity(x);
-      };
-
-      const computeDaniX = () => {
-        const canvasWidth = app.renderer.width;
-        const x =
-          canvasWidth -
-          scaleFontSize(window.innerWidth) * 2.3 -
-          computeRightOffset();
-        return computeTextXProximity(x);
-      };
-
-      const computeYMultiplier = (base: number) =>
-        window.innerWidth > 767 ? base : base + 0.02;
-
-      // As the canvas gets taller, ease the text lines slightly closer
-      // together. At/below the reference height the spacing stays fully
-      // proportional (matching the original layout); above it the vertical
-      // gaps grow slower than the canvas so the block tightens up.
-      const textSpacingReferenceHeight = 600;
-      // 0 = no compression (fully proportional), 1 = constant pixel gaps.
-      const textSpacingStrength = 0.3;
-      // Anchor around the block's vertical center so it holds position while
-      // it tightens.
-      const textSpacingAnchor = 0.75;
-
-      const computeTextSpacingScale = () => {
-        const height = app.renderer.height;
-        if (height <= textSpacingReferenceHeight) return 1;
-        const constant = textSpacingReferenceHeight / height;
-        return 1 - textSpacingStrength + constant * textSpacingStrength;
-      };
-
-      // Apply the same height-based factor horizontally: as the canvas gets
-      // taller, pull each x toward the canvas center so the columns tighten up.
-      const computeTextXProximity = (x: number) => {
-        const center = app.renderer.width / 2;
-        return center + (x - center) * computeTextSpacingScale();
-      };
-
-      const computeLineY = (base: number) => {
-        const height = app.renderer.height;
-        const anchor = computeYMultiplier(textSpacingAnchor);
-        const multiplier = computeYMultiplier(base);
-        const scale = computeTextSpacingScale();
-        return (
-          height * anchor +
-          (multiplier - anchor) * height * scale -
-          scaleFontSize(window.innerWidth)
-        );
-      };
-
-      const computeHelloY = () => computeLineY(0.66);
-
-      const computeFriendY = () => computeLineY(0.76);
-
-      const computeImY = () => computeLineY(0.88);
-
-      const computeDaniY = () => computeLineY(0.94);
-
-      hello.x = computeHelloX();
-      hello.y = computeHelloY();
+      const m0 = layoutMetrics();
+      hello.x = computeHelloX(m0);
+      hello.y = computeHelloY(m0);
       hello.rotation = (-10 * Math.PI) / 180;
 
-      friend.x = computeFriendX();
-      friend.y = computeFriendY();
+      friend.x = computeFriendX(m0);
+      friend.y = computeFriendY(m0);
       friend.rotation = (3 * Math.PI) / 180;
 
-      im.x = computeImX();
-      im.y = computeImY();
+      im.x = computeImX(m0);
+      im.y = computeImY(m0);
 
-      dani.x = computeDaniX();
-      dani.y = computeDaniY();
+      dani.x = computeDaniX(m0);
+      dani.y = computeDaniY(m0);
 
-      circle.x = computeHelloX();
+      circle.x = computeHelloX(m0);
       circle.y = 16 + circleRadius;
       let circleSquashX = 0;
       let circleSquashY = 0;
@@ -535,7 +434,16 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       let circleSquashTargetY = 0;
       let squashAccumulator = 0;
 
-      const textBodies = [
+      type TextBody = {
+        sprite: Text;
+        vx: number;
+        vy: number;
+        mass: number;
+        targetX: number;
+        targetY: number;
+      };
+
+      const textBodies: TextBody[] = [
         {
           sprite: hello,
           vx: 0,
@@ -562,10 +470,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           targetY: dani.y,
         },
       ];
-      const textLocalBoundsCache = new WeakMap<
-        Text,
-        { x: number; y: number; width: number; height: number }
-      >();
+      const textLocalBoundsCache = new WeakMap<Text, LocalBounds>();
       const getCachedLocalBounds = (sprite: Text) => {
         let bounds = textLocalBoundsCache.get(sprite);
         if (!bounds) {
@@ -580,65 +485,6 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         }
         return bounds;
       };
-      // Oriented bounding box (OBB) derived from the sprite's local glyph
-      // bounds plus its rotation, so the collision box tracks the rotated
-      // visuals exactly instead of using an upright axis-aligned rectangle.
-      const getObb = (sprite: Text) => {
-        const bounds = getCachedLocalBounds(sprite);
-        const cos = Math.cos(sprite.rotation);
-        const sin = Math.sin(sprite.rotation);
-        const localCenterX = bounds.x + bounds.width / 2;
-        const localCenterY = bounds.y + bounds.height / 2;
-        return {
-          cx: sprite.x + cos * localCenterX - sin * localCenterY,
-          cy: sprite.y + sin * localCenterX + cos * localCenterY,
-          // Local x/y axes expressed in world space.
-          axX: cos,
-          axY: sin,
-          ayX: -sin,
-          ayY: cos,
-          hw: bounds.width / 2,
-          hh: bounds.height / 2,
-        };
-      };
-
-      // Separating Axis Theorem between two OBBs. Returns the minimum
-      // translation vector (unit normal pointing from b toward a) and the
-      // penetration depth, or null when they don't overlap.
-      const obbCollision = (
-        a: ReturnType<typeof getObb>,
-        b: ReturnType<typeof getObb>,
-      ) => {
-        const axes = [
-          { x: a.axX, y: a.axY },
-          { x: a.ayX, y: a.ayY },
-          { x: b.axX, y: b.axY },
-          { x: b.ayX, y: b.ayY },
-        ];
-        const dcx = a.cx - b.cx;
-        const dcy = a.cy - b.cy;
-        let minOverlap = Infinity;
-        let nx = 0;
-        let ny = 0;
-        for (const axis of axes) {
-          const ra =
-            Math.abs(a.axX * axis.x + a.axY * axis.y) * a.hw +
-            Math.abs(a.ayX * axis.x + a.ayY * axis.y) * a.hh;
-          const rb =
-            Math.abs(b.axX * axis.x + b.axY * axis.y) * b.hw +
-            Math.abs(b.ayX * axis.x + b.ayY * axis.y) * b.hh;
-          const centerProj = dcx * axis.x + dcy * axis.y;
-          const overlap = ra + rb - Math.abs(centerProj);
-          if (overlap <= 0) return null;
-          if (overlap < minOverlap) {
-            minOverlap = overlap;
-            const sign = centerProj < 0 ? -1 : 1;
-            nx = axis.x * sign;
-            ny = axis.y * sign;
-          }
-        }
-        return { nx, ny, overlap: minOverlap };
-      };
       for (const body of textBodies) {
         getCachedLocalBounds(body.sprite);
       }
@@ -649,25 +495,25 @@ export default function PixiSketch({ className }: PixiSketchProps) {
       const daniBody = textBodies[3];
 
       updateTextFontSizes = () => {
-        const fontSize = scaleFontSize(window.innerWidth);
-        textStyle.fontSize = fontSize;
-        friendTextStyle.fontSize = fontSize;
+        cachedFontSize = scaleFontSize(window.innerWidth);
+        textStyle.fontSize = cachedFontSize;
         for (const body of textBodies) {
           textLocalBoundsCache.delete(body.sprite);
         }
-        circleRadius = fontSize * 0.6;
+        circleRadius = cachedFontSize * 0.6;
         circle.clear().circle(0, 0, circleRadius).fill("0xffcc00");
       };
 
       updateTextPositions = () => {
-        helloBody.targetX = computeHelloX();
-        helloBody.targetY = computeHelloY();
-        friendBody.targetX = computeFriendX();
-        friendBody.targetY = computeFriendY();
-        imBody.targetX = computeImX();
-        imBody.targetY = computeImY();
-        daniBody.targetX = computeDaniX();
-        daniBody.targetY = computeDaniY();
+        const m = layoutMetrics();
+        helloBody.targetX = computeHelloX(m);
+        helloBody.targetY = computeHelloY(m);
+        friendBody.targetX = computeFriendX(m);
+        friendBody.targetY = computeFriendY(m);
+        imBody.targetX = computeImX(m);
+        imBody.targetY = computeImY(m);
+        daniBody.targetX = computeDaniX(m);
+        daniBody.targetY = computeDaniY(m);
       };
 
       app.stage.addChild(
@@ -681,74 +527,38 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         cursor,
       );
 
-      app.ticker.add((ticker) => {
-        const rawDelta = ticker.deltaTime;
-        const delta = rawDelta;
-        const damping = 0.968;
-        const bounce = softPushEnabled ? 1 : 1.07;
-        const textDamping = 0.968;
-        const textBounce = softPushEnabled ? 1 : 1.07;
-        const maxVelocity = 40;
-        // Restitution >1 adds energy on impact, which is what makes the ball
-        // feel lively — but it also makes it buzz when wedged in a tight spot,
-        // where it collides many times per second at tiny speeds. So keep the
-        // full lively bounce for genuine (fast) impacts, and fade toward an
-        // energy-losing restitution for gentle contacts so the ball settles
-        // instead of jiggling. Approach speed (px/frame) at which the full
-        // bounce kicks in; below it, restitution eases down to bounceLow.
-        const bounceLow = 0.01;
-        const bounceFullSpeed = 4;
-        const restitutionForSpeed = (speed: number, high: number) => {
-          const t = Math.min(1, speed / bounceFullSpeed);
-          const eased = t * t * (3 - 2 * t);
-          return bounceLow + (high - bounceLow) * eased;
-        };
-        const circleMass = 1;
-        const cursorRadius = 6;
-        // Extra gap past physical contact at which the cursor swaps to "flick".
-        // 0 = swap exactly when the cursor touches the circle.
-        const cursorFlickGap = 0;
-        // Minimum time (seconds) the "flick" hand stays after switching.
-        const cursorFlickMinHold = 0.4;
-        const cursorKickScale = 0.003;
-        // How much the cursor's own approach speed influences the kick given to
-        // the ball. 0 = every collision imparts the same reference kick no
-        // matter how fast the cursor moved; 1 = fully proportional to speed
-        // (the old behaviour). Lower values make slow and fast hits push the
-        // ball a more similar amount.
-        const cursorKickVelocityInfluence = softPushEnabled ? 0.25 : 0.5;
-        // Approach speed (px/s) a collision is normalised toward, so a gentle
-        // touch and a hard flick land near this baseline push.
-        const cursorKickReferenceSpeed = 8000;
-        // Softness scales continuously with how slow the ball and cursor are.
-        // At 0 speed → fully soft (approach-proportional nudge); at/above these
-        // caps → fully hard (reference-floor kick). Softness is the product of
-        // both factors, so a moving ball still gets a full kick from a
-        // stationary hand (juggling). Disable with ?softpush=off.
-        const softPushBallMax = 10;
-        const softPushCursorMax = 2000;
-        const softPushScale = 0.001;
-        const cursorSquashScale = 1;
-        const cursorSquashSpeedRef = 1;
-        const textSpring = 0.008;
-        const squashDecay = 0.5;
-        const squashRise = 0.13;
-        // The squash envelope runs on a fixed 60fps clock (see below), so this
-        // is the wall-clock length of one simulated squash step.
-        const squashStepMS = 1000 / 60;
-        // Cap on how far the circle can squash. Desktop uses a lower ceiling
-        // so cursor flicks and bounces deform the ball less than on mobile.
-        const circleSquashMax = isHandheld ? 2 : 0.8;
-        const circleSquashVelocityScale = 0.09;
-        const stretchFactor = 1.4;
+      // Tuned constants — hoisted out of the ticker so they aren't rebuilt
+      // sixty times a second.
+      const damping = 0.968;
+      const bounce = softPushEnabled ? 1 : 1.07;
+      const textDamping = 0.968;
+      const textBounce = softPushEnabled ? 1 : 1.07;
+      const maxVelocity = 40;
+      const circleMass = 1;
+      const cursorRadius = 6;
+      const cursorFlickGap = 0;
+      const cursorFlickMinHold = 0.4;
+      const cursorKickScale = 0.003;
+      const cursorKickVelocityInfluence = softPushEnabled ? 0.25 : 0.5;
+      const cursorKickReferenceSpeed = 8000;
+      const softPushBallMax = 10;
+      const softPushCursorMax = 2000;
+      const softPushScale = 0.001;
+      const cursorSquashScale = 1;
+      const cursorSquashSpeedRef = 1;
+      const textSpring = 0.008;
+      const squashDecay = 0.5;
+      const squashRise = 0.13;
+      const squashStepMS = 1000 / 60;
+      const circleSquashMax = isHandheld ? 2 : 0.8;
+      const circleSquashVelocityScale = 0.09;
+      const stretchFactor = 1.4;
 
-        // The decay constants above are tuned for 60fps, where they run once
-        // per frame (delta === 1). Applying them once per frame at any other
-        // rate makes decay time-dependent: a lower FPS (e.g. Safari) runs
-        // fewer decay steps per second, so the ball keeps more velocity and
-        // moves/bounces faster. Raising each factor to the `delta` power keeps
-        // the decay-per-second constant while leaving 60fps behaviour
-        // untouched (x ** 1 === x).
+      app.ticker.add((ticker) => {
+        const delta = ticker.deltaTime;
+
+        // Decay constants are tuned for 60fps (delta === 1). Raising each
+        // factor to `delta` keeps decay-per-second constant at other rates.
         const frameDamping = Math.pow(damping, delta);
         const frameTextDamping = Math.pow(textDamping, delta);
         const framePointerDamping = Math.pow(0.9, delta);
@@ -759,7 +569,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
             const lerpT = Math.min(1, idleTiltElapsed / idleTiltDuration);
             tiltX =
               0.006 *
-              scaleFontSize(window.innerWidth) *
+              cachedFontSize *
               (700 / app.renderer.height) *
               (1 - lerpT);
             tiltY = 0.3 * (1 - lerpT) + idleTiltStartY;
@@ -770,8 +580,8 @@ export default function PixiSketch({ className }: PixiSketchProps) {
         } else {
           idleTiltElapsed = 0;
         }
-        const handShouldFadeIn = handMode === "prompt";
-        if (handShouldFadeIn) {
+
+        if (handMode === "prompt") {
           handFadeElapsed += ticker.deltaMS / 1000;
         }
         if (handMode === "enabled") {
@@ -848,8 +658,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
               const approachSpeed = -velAlongNormal;
               const ballSpeed = Math.hypot(velocityX, velocityY);
               const pointerSpeed = Math.hypot(pointerVX, pointerVY);
-              // 1 = fully soft nudge, 0 = full reference-floor kick. Product of
-              // ball + cursor softness so either being fast restores a kick.
+              // 1 = fully soft nudge, 0 = full reference-floor kick.
               const softT = softPushEnabled
                 ? (1 - Math.min(1, ballSpeed / softPushBallMax)) *
                   (1 - Math.min(1, pointerSpeed / softPushCursorMax))
@@ -946,8 +755,6 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           );
         }
 
-        const collisionsEnabled = true;
-
         for (const body of textBodies) {
           const text = body.sprite;
           const bounds = getCachedLocalBounds(text);
@@ -956,8 +763,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           const right = bounds.x + bounds.width;
           const bottom = bounds.y + bounds.height;
 
-          const cos = Math.cos(text.rotation);
-          const sin = Math.sin(text.rotation);
+          const { cos, sin } = getRotationAxes(text);
 
           // Transform the circle center into the text's local (unrotated)
           // frame so the rectangle test matches the rotated glyphs exactly.
@@ -973,7 +779,7 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           const diffY = localCY - nearestY;
           const distSq = diffX * diffX + diffY * diffY;
 
-          if (collisionsEnabled && distSq < circleRadius * circleRadius) {
+          if (distSq < circleRadius * circleRadius) {
             const dist = Math.max(0.0001, Math.sqrt(distSq));
             let localNX =
               distSq === 0 ? localCX - (left + right) / 2 : diffX / dist;
@@ -1045,9 +851,33 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           for (let j = i + 1; j < textBodies.length; j += 1) {
             const a = textBodies[i];
             const b = textBodies[j];
-            if (!collisionsEnabled) continue;
+            // Skip SAT when both words are parked near their rest pose —
+            // they can't bump. Resume as soon as either is disturbed.
+            if (
+              isBodySettled(
+                a.vx,
+                a.vy,
+                a.sprite.x,
+                a.sprite.y,
+                a.targetX,
+                a.targetY,
+              ) &&
+              isBodySettled(
+                b.vx,
+                b.vy,
+                b.sprite.x,
+                b.sprite.y,
+                b.targetX,
+                b.targetY,
+              )
+            ) {
+              continue;
+            }
 
-            const collision = obbCollision(getObb(a.sprite), getObb(b.sprite));
+            const collision = obbCollision(
+              getObb(a.sprite, getCachedLocalBounds(a.sprite)),
+              getObb(b.sprite, getCachedLocalBounds(b.sprite)),
+            );
             if (!collision) continue;
 
             const { nx, ny, overlap: separation } = collision;
@@ -1081,14 +911,8 @@ export default function PixiSketch({ className }: PixiSketchProps) {
           }
         }
 
-        // The squash is a two-stage transient: an impact bumps the target up,
-        // the target decays, and the visible squash chases it via a lerp. What
-        // you see is the PEAK of that chase, which depends on how many times
-        // the chase samples the target before it decays away. Per-unit-time
-        // rate matching (Math.pow) does NOT preserve that peak, so a higher FPS
-        // squashes harder and a lower FPS softer. Stepping the envelope on a
-        // fixed 60fps clock reproduces the exact 60fps response at any frame
-        // rate. The step cap guards against a huge catch-up burst after a stall.
+        // Squash envelope steps on a fixed 60fps clock so peak deformation
+        // stays consistent across frame rates.
         squashAccumulator += ticker.deltaMS;
         let squashSteps = 0;
         while (squashAccumulator >= squashStepMS && squashSteps < 6) {
@@ -1130,6 +954,9 @@ export default function PixiSketch({ className }: PixiSketchProps) {
 
     return () => {
       isMounted = false;
+      if (resizeRafId !== null) {
+        window.cancelAnimationFrame(resizeRafId);
+      }
       window.removeEventListener("deviceorientation", handleOrientation);
       app.canvas.removeEventListener("click", enableGyroOnPointer);
       app.canvas.removeEventListener("touchend", enableGyroOnPointer);
@@ -1144,10 +971,5 @@ export default function PixiSketch({ className }: PixiSketchProps) {
     };
   }, []);
 
-  return (
-    <div
-      ref={containerRef}
-      className={className}
-    />
-  );
+  return <div ref={containerRef} className={className} />;
 }
