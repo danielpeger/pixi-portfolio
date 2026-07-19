@@ -41,8 +41,8 @@
       --background: oklch(0 0 0);
       --foreground: oklch(1 0 0);
       --secondary-foreground: oklch(0.6347 0.0059 286.23);
-      --tertiary-foreground: oklch(0.8892 0.0041 286.32);
-      --separator: oklch(0.9233 0.0067 286.27);
+      --tertiary-foreground: oklch(0.4507 0.0069 286.25);
+      --separator: oklch(0.25 0.0067 286.27);
       --accent: oklch(0.8652 0.1768 90.38);
       --accent-muted: oklch(0.3192 0.021 103.59);
     }
