@@ -31,7 +31,7 @@
     --tertiary-foreground: oklch(0.8187 0.0069 286.25);
     --separator: oklch(0.9233 0.0067 286.27);
     --accent: oklch(0.8652 0.1768 90.38);
-    --accent-muted: oklch(0.9873 0.0262 102.21);
+    --accent-muted: oklch(0.9781 0.0422 98.09);
     --vt-spring: cubic-bezier(0.14, 1.4, 0.32, 1);
     --vt-spring-duration: 900ms;
   }
@@ -42,9 +42,9 @@
       --foreground: oklch(1 0 0);
       --secondary-foreground: oklch(0.6347 0.0059 286.23);
       --tertiary-foreground: oklch(0.8892 0.0041 286.32);
-      --separator: oklch(0.25 0.0067 286.27);
+      --separator: oklch(0.9233 0.0067 286.27);
       --accent: oklch(0.8652 0.1768 90.38);
-      --accent-muted: oklch(0.32 0.021 102);
+      --accent-muted: oklch(0.3192 0.021 103.59);
     }
   }
 
@@ -208,14 +208,8 @@
     view-transition-name: ratio-image;
   }
 
-  .overview-hero {
-    view-transition-name: overview-image;
-  }
-
   html.from-home.to-ratio::view-transition-group(ratio-image),
-  html.from-ratio.to-home::view-transition-group(ratio-image),
-  html.from-home.to-overview::view-transition-group(overview-image),
-  html.from-overview.to-home::view-transition-group(overview-image) {
+  html.from-ratio.to-home::view-transition-group(ratio-image) {
     animation-duration: var(--vt-spring-duration);
     animation-timing-function: var(--vt-spring);
     z-index: 1;
