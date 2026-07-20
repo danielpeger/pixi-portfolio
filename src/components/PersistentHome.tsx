@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import HomeContent from "@/components/HomeContent";
+import { isIconsOff } from "@/lib/features";
 
 /**
  * Keeps the home page (and Pixi sketch) mounted after the first visit to `/`,
@@ -16,6 +17,11 @@ export default function PersistentHome({
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [keepHome, setKeepHome] = useState(isHome);
+  const [iconsOff, setIconsOff] = useState(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("icons") === "off"
+      : false,
+  );
 
   useEffect(() => {
     if (isHome) setKeepHome(true);
@@ -23,6 +29,9 @@ export default function PersistentHome({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <IconsOffSync onChange={setIconsOff} />
+      </Suspense>
       {keepHome && (
         <div
           className={
@@ -33,10 +42,18 @@ export default function PersistentHome({
           aria-hidden={!isHome}
           inert={!isHome ? true : undefined}
         >
-          <HomeContent active={isHome} />
+          <HomeContent active={isHome} iconsOff={iconsOff} />
         </div>
       )}
       {!isHome && children}
     </>
   );
+}
+
+function IconsOffSync({ onChange }: { onChange: (value: boolean) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onChange(isIconsOff(searchParams));
+  }, [searchParams, onChange]);
+  return null;
 }
