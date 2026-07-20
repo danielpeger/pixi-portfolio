@@ -7,7 +7,7 @@ export default function OverviewPage() {
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
       <div
         data-vt="overview-image"
-        className="overview-hero relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden mb-8"
+        className="overview-hero relative w-full bg-blue-50 aspect-5/4 rounded-[20px] overflow-hidden mb-8"
       >
         <Image
           src="/overview.png"

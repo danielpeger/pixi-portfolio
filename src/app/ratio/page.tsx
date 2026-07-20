@@ -7,7 +7,7 @@ export default function RatioPage() {
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
       <div
         data-vt="ratio-image"
-        className="ratio-hero relative w-full bg-accent-muted aspect-5/4 rounded-[20px] overflow-hidden mb-8"
+        className="ratio-hero relative w-full bg-red-50 aspect-5/4 rounded-[20px] overflow-hidden mb-8"
       >
         <Image
           src="/ratio.png"

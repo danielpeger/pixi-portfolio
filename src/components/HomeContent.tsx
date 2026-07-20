@@ -136,7 +136,7 @@ export default function HomeContent({ active = true }: HomeContentProps) {
           >
             <div
               data-vt="overview-image"
-              className="relative w-full bg-stone-100 aspect-5/4 rounded-[20px] overflow-hidden mb-2"
+              className="relative w-full bg-blue-50 aspect-5/4 rounded-[20px] overflow-hidden mb-2"
             >
               <Image
                 src="/overview.png"
@@ -166,7 +166,7 @@ export default function HomeContent({ active = true }: HomeContentProps) {
           </h3>
           <div
             data-vt="ratio-image"
-            className="relative w-full bg-stone-100 aspect-5/4 rounded-[20px] overflow-hidden mb-2"
+            className="relative w-full bg-red-50 aspect-5/4 rounded-[20px] overflow-hidden mb-2"
           >
             <Image
               src="/ratio.png"
