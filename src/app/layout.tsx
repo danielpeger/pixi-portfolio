@@ -40,6 +40,12 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Daniel Péger",
   description: "My portfolio",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+    ],
+  },
 };
 
 export default function RootLayout({
