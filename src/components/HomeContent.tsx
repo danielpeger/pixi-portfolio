@@ -55,7 +55,7 @@ export default function HomeContent({
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <PixiSketch
           active={active}
-          className="h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
+          className="h-[88svh] md:h-[min(88svh,800px)] xl:h-[min(88svh,960px)]"
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
@@ -77,8 +77,8 @@ export default function HomeContent({
                 />
                 <p>
                   A design engineer who puts the <em>soft</em> in software.{" "}
-                  <br /> I've been a product designer since 2016, and I'm
-                  currently pursuing a master’s in software engineering.
+                  <br /> I've been in design since 2016, and I'm currently
+                  pursuing a master’s in software engineering.
                 </p>
               </div>
               <div className="mb-8 flow-root">
@@ -155,6 +155,34 @@ export default function HomeContent({
           </ul>
         </div>
       </section>
+      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
+        <TransitionLink
+          href={ratioHref}
+          className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16"
+        >
+          {!iconsOff && (
+            <h3 className="pb-4 text-xl xl:text-2xl">
+              Projects I'm most proud of
+            </h3>
+          )}
+          <div
+            data-vt="ratio-image"
+            className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
+              iconsOff ? "bg-accent-muted" : "border bg-gray-50"
+            }`}
+          >
+            <Image
+              src="/ratio.png"
+              alt="Ratio"
+              fill
+              className="object-cover"
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 712px"
+            />
+          </div>
+          <p>Ratio description</p>
+        </TransitionLink>
+      </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
           {iconsOff && (
@@ -169,7 +197,7 @@ export default function HomeContent({
             <div
               data-vt="overview-image"
               className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
-                iconsOff ? "bg-accent-muted" : "bg-blue-50"
+                iconsOff ? "bg-accent-muted" : "border bg-gray-50"
               }`}
             >
               <Image
@@ -189,34 +217,6 @@ export default function HomeContent({
             </p>{" "}
           </TransitionLink>
         </div>
-      </section>
-      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
-        <TransitionLink
-          href={ratioHref}
-          className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0"
-        >
-          {!iconsOff && (
-            <h3 className="pb-4 text-xl xl:text-2xl">
-              Projects I'm most proud of
-            </h3>
-          )}
-          <div
-            data-vt="ratio-image"
-            className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
-              iconsOff ? "bg-accent-muted" : "bg-red-50"
-            }`}
-          >
-            <Image
-              src="/ratio.png"
-              alt="Ratio"
-              fill
-              className="object-cover"
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 712px"
-            />
-          </div>
-          <p>Ratio description</p>
-        </TransitionLink>
       </section>
     </main>
   );
