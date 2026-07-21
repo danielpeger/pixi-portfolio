@@ -171,9 +171,8 @@ export default function PixiSketch({
       app.canvas.style.width = "100%";
       app.canvas.style.height = "100%";
 
-      const [
-        [handTexture, tiltTexture, holdTexture, flickTexture],
-      ] = await Promise.all([assetsPromise, fontsPromise]);
+      const [[handTexture, tiltTexture, holdTexture, flickTexture]] =
+        await Promise.all([assetsPromise, fontsPromise]);
 
       if (!isMounted) {
         if (app.renderer) app.destroy(true);
@@ -294,7 +293,6 @@ export default function PixiSketch({
       let tiltY = 0;
       let idleTiltElapsed = 0;
       const idleTiltDuration = 2.5;
-      const idleTiltStartX = 0.15;
       const idleTiltStartY = 0.5;
       let baseGamma: number | null = null;
       let baseBeta: number | null = null;
@@ -613,19 +611,13 @@ export default function PixiSketch({
         const framePointerDamping = Math.pow(0.9, delta);
 
         if (!gyroEnabled || !hasOrientationData) {
-          if (!isHandheld) {
-            idleTiltElapsed += ticker.deltaMS / 1000;
-            const lerpT = Math.min(1, idleTiltElapsed / idleTiltDuration);
-            tiltX =
-              0.006 *
-              cachedFontSize *
-              (700 / app.renderer.height) *
-              (1 - lerpT);
-            tiltY = 0.3 * (1 - lerpT) + idleTiltStartY;
-          } else {
-            tiltX = idleTiltStartX;
-            tiltY = idleTiltStartY;
-          }
+          idleTiltElapsed += ticker.deltaMS / 1000;
+          const lerpT = Math.min(1, idleTiltElapsed / idleTiltDuration);
+          // Peak at ~700px tall; shorter (and taller) canvases get a softer kick.
+          const h = app.renderer.height;
+          const heightScale = h >= 700 ? 700 / h : h / 700;
+          tiltX = 0.006 * cachedFontSize * heightScale * (1 - lerpT);
+          tiltY = 0.4 * heightScale * (1 - lerpT) + idleTiltStartY;
         } else {
           idleTiltElapsed = 0;
         }
