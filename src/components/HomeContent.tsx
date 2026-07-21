@@ -49,6 +49,7 @@ export default function HomeContent({
     : new URLSearchParams();
   const overviewHref = withFeatureParams("/overview", featureParams);
   const ratioHref = withFeatureParams("/ratio", featureParams);
+  const kinjaHref = withFeatureParams("/kinja", featureParams);
 
   return (
     <main className="flex flex-col flex-wrap content-between h-[5000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:order-2 text-lg md:text-base xl:text-xl">
@@ -186,10 +187,8 @@ export default function HomeContent({
               />
             </div>
             <p>
-              In 2019 I was part of the team rethinking navigation on the Kinja
-              platform. This is the story of how we used an iterative
-              human-centered design process to make our content structured and
-              discoverable.
+              LastPass outgrew its Admin Console landing page. This is the story
+              of how we designed a new Overview from first principles.
             </p>{" "}
           </TransitionLink>
         </div>
@@ -216,8 +215,43 @@ export default function HomeContent({
               sizes="(max-width: 768px) 100vw, 712px"
             />
           </div>
-          <p>Ratio description</p>
+          <p>
+            I'm a huge coffee nerd, and I couldn't help but design and build a
+            coffee app. Ratio lets you taste, reflect and dial-in espresso.
+          </p>
         </TransitionLink>
+      </section>
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+          <TransitionLink
+            href={kinjaHref}
+            className="block max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0"
+          >
+            <div
+              data-vt="kinja-image"
+              className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
+                iconsOn
+                  ? "border border-gray-200 bg-gray-50"
+                  : "border border-yellow-200 bg-accent-muted"
+              }`}
+            >
+              <Image
+                src="/kinja.png"
+                alt="Kinja"
+                fill
+                className="object-cover"
+                unoptimized
+                sizes="(max-width: 768px) 100vw, 712px"
+              />
+            </div>
+            <p>
+              In 2019 I was part of the team rethinking navigation on the Kinja
+              platform. This is the story of how we used an iterative
+              human-centered design process to make our content structured and
+              discoverable.
+            </p>{" "}
+          </TransitionLink>
+        </div>
       </section>
     </main>
   );

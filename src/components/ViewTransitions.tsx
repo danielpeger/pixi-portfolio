@@ -24,13 +24,15 @@ export const ViewTransitionsContext =
 
 const VT_RATIO = "ratio-image";
 const VT_OVERVIEW = "overview-image";
+const VT_KINJA = "kinja-image";
 
-type SharedVtName = typeof VT_RATIO | typeof VT_OVERVIEW;
+type SharedVtName = typeof VT_RATIO | typeof VT_OVERVIEW | typeof VT_KINJA;
 
 function pageKind(path: string) {
   if (path === "/") return "home";
   if (path.startsWith("/ratio")) return "ratio";
   if (path.startsWith("/overview")) return "overview";
+  if (path.startsWith("/kinja")) return "kinja";
   return "other";
 }
 
@@ -38,6 +40,7 @@ function sharedVtForTransition(from: string, to: string): SharedVtName | null {
   const kinds = new Set([pageKind(from), pageKind(to)]);
   if (kinds.has("home") && kinds.has("ratio")) return VT_RATIO;
   if (kinds.has("home") && kinds.has("overview")) return VT_OVERVIEW;
+  if (kinds.has("home") && kinds.has("kinja")) return VT_KINJA;
   return null;
 }
 
@@ -64,6 +67,7 @@ function untagSharedElements(name: SharedVtName) {
 function untagAllSharedElements() {
   untagSharedElements(VT_RATIO);
   untagSharedElements(VT_OVERVIEW);
+  untagSharedElements(VT_KINJA);
 }
 
 function isVtVisible(el: HTMLElement) {
@@ -231,14 +235,22 @@ export default function ViewTransitions({
           ? VT_RATIO
           : kind === "overview"
             ? VT_OVERVIEW
-            : pendingDirection.current
-              ? sharedVtForTransition(
-                  pendingDirection.current.from,
-                  pendingDirection.current.to,
-                )
-              : null;
+            : kind === "kinja"
+              ? VT_KINJA
+              : pendingDirection.current
+                ? sharedVtForTransition(
+                    pendingDirection.current.from,
+                    pendingDirection.current.to,
+                  )
+                : null;
 
-      if (sharedVt && (kind === "home" || kind === "ratio" || kind === "overview")) {
+      if (
+        sharedVt &&
+        (kind === "home" ||
+          kind === "ratio" ||
+          kind === "overview" ||
+          kind === "kinja")
+      ) {
         untagAllSharedElements();
         tagSharedElement(sharedVt);
       }

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="45" height="45" aria-label="Group 3" viewBox="0 0 45 45">
+	<defs>
+		<radialGradient id="iconmobile-b" cx="50%" cy="50%" r="70.1%" fx="50%" fy="50%">
+			<stop offset="0%" stop-color="#5CA3FF"/>
+			<stop offset="100%" stop-color="#DDEAFF"/>
+		</radialGradient>
+		<path id="iconmobile-a" d="M4.54.04l24.16.2.88.01h.33l.88-.01 6.98-.12a7 7 0 0 1 7.11 7.11l-.37 23.05-.02.96v.4l.05.96.2 5.62a6.47 6.47 0 0 1-6.52 6.71l-17.35-.17-.88-.01h-1.2l-11.6.16A7 7 0 0 1 .1 37.8l.4-27.5V8.84l-.06-1-.19-3.3a4.26 4.26 0 0 1 4.3-4.5z"/>
+		<path id="iconmobile-e" d="M21 18v2H0v-2h21zm0-9v2H0V9h21zm0-9v2H0V0h21z"/>
+		<filter id="iconmobile-d" width="261.9%" height="270%" x="-81%" y="-65%" filterUnits="objectBoundingBox">
+			<feOffset dy="4" in="SourceAlpha" result="shadowOffsetOuter1"/>
+			<feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="5"/>
+			<feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0.0481587965   0 0 0 0 0.18935469   0 0 0 0 0.806951993  0 0 0 1 0"/>
+		</filter>
+	</defs>
+	<g fill="none" fill-rule="evenodd">
+		<mask id="iconmobile-c" fill="#fff">
+			<use xlink:href="#iconmobile-a"/>
+		</mask>
+		<use fill="url(#iconmobile-b)" xlink:href="#iconmobile-a"/>
+		<g mask="url(#iconmobile-c)">
+			<g transform="translate(12 12)">
+				<use fill="#000" filter="url(#iconmobile-d)" xlink:href="#iconmobile-e"/>
+				<use fill="#FFF" xlink:href="#iconmobile-e"/>
+			</g>
+		</g>
+	</g>
+</svg>

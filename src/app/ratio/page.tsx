@@ -15,9 +15,7 @@ export default async function RatioPage({ searchParams }: RatioPageProps) {
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
       <div
         data-vt="ratio-image"
-        className={`ratio-hero relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-8 ${
-          iconsOn ? "bg-red-50" : "bg-accent-muted"
-        }`}
+        className="ratio-hero relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-8 border border-yellow-200 bg-accent-muted"
       >
         <Image
           src="/ratio.png"
