@@ -55,7 +55,11 @@ export default function HomeContent({
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <PixiSketch
           active={active}
-          className="h-[88svh] md:h-[min(88svh,800px)] xl:h-[min(88svh,960px)]"
+          className={`${
+            iconsOff
+              ? "h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
+              : "h-[88svh] md:h-[min(88svh,800px)] xl:h-[min(88svh,960px)]"
+          }`}
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
@@ -63,8 +67,8 @@ export default function HomeContent({
           {iconsOff ? (
             <p>
               A design engineer who puts the <em>soft</em> in software. <br />{" "}
-              I've been a product designer since 2016, and I'm currently
-              pursuing a master’s in software engineering.
+              I've been in design since 2016, and I'm currently pursuing a
+              master’s in software engineering.
             </p>
           ) : (
             <>
@@ -168,7 +172,9 @@ export default function HomeContent({
           <div
             data-vt="ratio-image"
             className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
-              iconsOff ? "bg-accent-muted" : "border bg-gray-50"
+              iconsOff
+                ? "border border-yellow-200 bg-accent-muted"
+                : "border bg-gray-50"
             }`}
           >
             <Image
@@ -197,7 +203,9 @@ export default function HomeContent({
             <div
               data-vt="overview-image"
               className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
-                iconsOff ? "bg-accent-muted" : "border bg-gray-50"
+                iconsOff
+                  ? "border border-yellow-200 bg-accent-muted"
+                  : "border border-gray-200 bg-gray-50"
               }`}
             >
               <Image
