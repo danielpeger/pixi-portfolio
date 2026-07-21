@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 type HomeContentProps = {
   active?: boolean;
-  /** When true, restores the pre-icon header layout (`?icons=off`). */
-  iconsOff?: boolean;
+  /** When true, enables the icon header layout (`?icons=on`). */
+  iconsOn?: boolean;
 };
 
 function FloatIcon({
@@ -42,10 +42,10 @@ function FloatIcon({
 
 export default function HomeContent({
   active = true,
-  iconsOff = false,
+  iconsOn = false,
 }: HomeContentProps) {
-  const featureParams = iconsOff
-    ? new URLSearchParams("icons=off")
+  const featureParams = iconsOn
+    ? new URLSearchParams("icons=on")
     : new URLSearchParams();
   const overviewHref = withFeatureParams("/overview", featureParams);
   const ratioHref = withFeatureParams("/ratio", featureParams);
@@ -56,21 +56,15 @@ export default function HomeContent({
         <PixiSketch
           active={active}
           className={`${
-            iconsOff
-              ? "h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
-              : "h-[88svh] md:h-[min(88svh,800px)] xl:h-[min(88svh,960px)]"
+            iconsOn
+              ? "h-[88svh] md:h-[min(88svh,800px)] xl:h-[min(88svh,960px)]"
+              : "h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
           }`}
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
-          {iconsOff ? (
-            <p>
-              A design engineer who puts the <em>soft</em> in software. <br />{" "}
-              I've been in design since 2016, and I'm currently pursuing a
-              master’s in software engineering.
-            </p>
-          ) : (
+          {iconsOn ? (
             <>
               <div className="mb-8 flow-root">
                 <FloatIcon
@@ -125,6 +119,12 @@ export default function HomeContent({
                 </p>
               </div>
             </>
+          ) : (
+            <p>
+              A design engineer who puts the <em>soft</em> in software. <br />{" "}
+              I've been in design since 2016, and I'm currently pursuing a
+              master’s in software engineering.
+            </p>
           )}
         </div>
       </section>
@@ -159,43 +159,11 @@ export default function HomeContent({
           </ul>
         </div>
       </section>
-      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
-        <TransitionLink
-          href={ratioHref}
-          className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16"
-        >
-          {!iconsOff && (
-            <h3 className="pb-4 text-xl xl:text-2xl">
-              Projects I'm most proud of
-            </h3>
-          )}
-          <div
-            data-vt="ratio-image"
-            className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
-              iconsOff
-                ? "border border-yellow-200 bg-accent-muted"
-                : "border bg-gray-50"
-            }`}
-          >
-            <Image
-              src="/ratio.png"
-              alt="Ratio"
-              fill
-              className="object-cover"
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 712px"
-            />
-          </div>
-          <p>Ratio description</p>
-        </TransitionLink>
-      </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
-          {iconsOff && (
-            <h3 className="pb-4 text-xl xl:text-2xl">
-              Projects I'm most proud of
-            </h3>
-          )}
+          <h3 className="pb-4 text-xl xl:text-2xl">
+            Projects I'm most proud of
+          </h3>
           <TransitionLink
             href={overviewHref}
             className="block max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0"
@@ -203,9 +171,9 @@ export default function HomeContent({
             <div
               data-vt="overview-image"
               className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
-                iconsOff
-                  ? "border border-yellow-200 bg-accent-muted"
-                  : "border border-gray-200 bg-gray-50"
+                iconsOn
+                  ? "border border-gray-200 bg-gray-50"
+                  : "border border-yellow-200 bg-accent-muted"
               }`}
             >
               <Image
@@ -225,6 +193,31 @@ export default function HomeContent({
             </p>{" "}
           </TransitionLink>
         </div>
+      </section>
+      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
+        <TransitionLink
+          href={ratioHref}
+          className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16"
+        >
+          <div
+            data-vt="ratio-image"
+            className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
+              iconsOn
+                ? "border bg-gray-50"
+                : "border border-yellow-200 bg-accent-muted"
+            }`}
+          >
+            <Image
+              src="/ratio.png"
+              alt="Ratio"
+              fill
+              className="object-cover"
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 712px"
+            />
+          </div>
+          <p>Ratio description</p>
+        </TransitionLink>
       </section>
     </main>
   );

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import BackLink from "@/components/BackLink";
-import { isIconsOff } from "@/lib/features";
+import { isIconsOn } from "@/lib/features";
 
 type RatioPageProps = {
   searchParams: Promise<{ icons?: string | string[] }>;
@@ -8,7 +8,7 @@ type RatioPageProps = {
 
 export default async function RatioPage({ searchParams }: RatioPageProps) {
   const params = await searchParams;
-  const iconsOff = isIconsOff(params);
+  const iconsOn = isIconsOn(params);
 
   return (
     <main className="px-8 md:px-[72px] py-16 max-w-[960px] mx-auto">
@@ -16,7 +16,7 @@ export default async function RatioPage({ searchParams }: RatioPageProps) {
       <div
         data-vt="ratio-image"
         className={`ratio-hero relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-8 ${
-          iconsOff ? "bg-accent-muted" : "bg-red-50"
+          iconsOn ? "bg-red-50" : "bg-accent-muted"
         }`}
       >
         <Image
