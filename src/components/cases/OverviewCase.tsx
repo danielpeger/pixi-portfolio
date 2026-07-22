@@ -6,11 +6,13 @@ import { CASE_HERO_SIZES, CASE_LAYOUT_IDS } from "@/lib/portfolio";
 
 type OverviewCaseProps = {
   iconsOn?: boolean;
+  shareLayout?: boolean;
   onHeroLayoutComplete?: () => void;
 };
 
 export default function OverviewCase({
   iconsOn = false,
+  shareLayout = true,
   onHeroLayoutComplete,
 }: OverviewCaseProps) {
   return (
@@ -27,6 +29,7 @@ export default function OverviewCase({
         }`}
         sizes={CASE_HERO_SIZES}
         priority
+        shareLayout={shareLayout}
         onLayoutAnimationComplete={onHeroLayoutComplete}
       />
       <DeferCaseBody>

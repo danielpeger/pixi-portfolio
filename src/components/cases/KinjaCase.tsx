@@ -337,11 +337,13 @@ function OutcomeStat({
 
 type KinjaCaseProps = {
   iconsOn?: boolean;
+  shareLayout?: boolean;
   onHeroLayoutComplete?: () => void;
 };
 
 export default function KinjaCase({
   iconsOn = false,
+  shareLayout = true,
   onHeroLayoutComplete,
 }: KinjaCaseProps) {
   return (
@@ -358,6 +360,7 @@ export default function KinjaCase({
         }`}
         sizes={CASE_HERO_SIZES}
         priority
+        shareLayout={shareLayout}
         onLayoutAnimationComplete={onHeroLayoutComplete}
       />
       <DeferCaseBody>

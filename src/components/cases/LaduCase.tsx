@@ -6,11 +6,13 @@ import { CASE_HERO_SIZES, CASE_LAYOUT_IDS } from "@/lib/portfolio";
 
 type LaduCaseProps = {
   iconsOn?: boolean;
+  shareLayout?: boolean;
   onHeroLayoutComplete?: () => void;
 };
 
 export default function LaduCase({
   iconsOn = false,
+  shareLayout = true,
   onHeroLayoutComplete,
 }: LaduCaseProps) {
   void iconsOn;
@@ -25,6 +27,7 @@ export default function LaduCase({
         className="w-full aspect-5/4 mb-8 border border-yellow-200 bg-accent-muted"
         sizes={CASE_HERO_SIZES}
         priority
+        shareLayout={shareLayout}
         onLayoutAnimationComplete={onHeroLayoutComplete}
       />
       <DeferCaseBody>

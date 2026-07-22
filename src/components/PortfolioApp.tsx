@@ -35,6 +35,19 @@ const VIEW_TITLES: Record<PortfolioView, string> = {
 const MORPH_FALLBACK_MS = 900;
 
 /**
+ * iOS Safari sizes `position:fixed; inset:0` to the padded (safe) viewport
+ * even with `viewport-fit=cover`. Stretch into the unsafe regions during the
+ * brief open-morph overlay; after park we switch to document scroll instead.
+ */
+const CASE_OVERLAY_STYLE = {
+  top: "calc(0px - env(safe-area-inset-top, 0px))",
+  right: "calc(0px - env(safe-area-inset-right, 0px))",
+  bottom: "calc(0px - env(safe-area-inset-bottom, 0px))",
+  left: "calc(0px - env(safe-area-inset-left, 0px))",
+  width: "auto",
+} as const;
+
+/**
  * Client-side portfolio shell: home + case studies as views so Motion
  * layoutId shared transitions can run in-tree. URLs stay real via
  * history.pushState for deep links / back-forward.
@@ -49,8 +62,9 @@ export default function PortfolioApp() {
   );
   /**
    * After the open morph, drop home layoutIds so they don't keep pairing
-   * with the case hero. Home stays opacity-0 + in-flow for the case visit
-   * (switching it to `fixed` was reflowing the hero and springing twice).
+   * with the case hero. Home is then taken `fixed` out of flow so the case
+   * can document-scroll (same safe-area path as a deep link). Switching home
+   * to fixed *during* the morph reflows the hero — only do it once parked.
    */
   const [homeParked, setHomeParked] = useState(
     () => viewFromPath(window.location.pathname) !== "home",
@@ -70,6 +84,7 @@ export default function PortfolioApp() {
   const scrollPositions = useRef(new Map<PortfolioView, number>());
   const isBackRef = useRef(false);
   const caseScrollRef = useRef<HTMLDivElement>(null);
+  const wasCaseOverlay = useRef(false);
 
   useEffect(() => {
     currentView.current = view;
@@ -88,15 +103,6 @@ export default function PortfolioApp() {
       history.scrollRestoration = "manual";
     }
   }, []);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (currentView.current !== "home" && keepHome) return;
-      scrollPositions.current.set(currentView.current, window.scrollY);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [keepHome]);
 
   useEffect(() => {
     document.title = VIEW_TITLES[view];
@@ -127,7 +133,12 @@ export default function PortfolioApp() {
 
   const isHome = view === "home";
   const morphingOpen = !isHome && keepHome && !homeParked;
-  const caseOverlay = !isHome && keepHome;
+  /**
+   * Fixed overlay only while the open morph needs home in-flow underneath.
+   * After park, the case document-scrolls like a deep link — that path already
+   * paints into the iOS safe areas; `position:fixed` does not.
+   */
+  const caseOverlay = morphingOpen;
 
   useEffect(() => {
     if (isHome) {
@@ -165,8 +176,6 @@ export default function PortfolioApp() {
       htmlOverscroll: html.style.overscrollBehavior,
       bodyOverscroll: body.style.overscrollBehavior,
     };
-    // Lock both roots — body-only overflow:hidden still lets iOS rubber-band
-    // the document and flash gaps above/below the fixed case scroller.
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
     html.style.overscrollBehavior = "none";
@@ -177,6 +186,15 @@ export default function PortfolioApp() {
       html.style.overscrollBehavior = prev.htmlOverscroll;
       body.style.overscrollBehavior = prev.bodyOverscroll;
     };
+  }, [caseOverlay]);
+
+  // Hand scroll from the fixed scroller to the window when the morph ends.
+  useLayoutEffect(() => {
+    if (wasCaseOverlay.current && !caseOverlay) {
+      const top = caseScrollRef.current?.scrollTop ?? 0;
+      window.scrollTo({ top, left: 0, behavior: "auto" });
+    }
+    wasCaseOverlay.current = caseOverlay;
   }, [caseOverlay]);
 
   useLayoutEffect(() => {
@@ -194,11 +212,22 @@ export default function PortfolioApp() {
       });
     } else if (!keepHome) {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    } else if (caseScrollRef.current) {
+    } else if (!homeParked && caseScrollRef.current) {
       caseScrollRef.current.scrollTop = 0;
     }
+    // When homeParked flips, the transfer effect owns scroll — don't reset.
     isBackRef.current = false;
-  }, [view, keepHome]);
+  }, [view, keepHome, homeParked]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      // During the open morph, scroll lives on the fixed case scroller.
+      if (currentView.current !== "home" && keepHome && !homeParked) return;
+      scrollPositions.current.set(currentView.current, window.scrollY);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [keepHome, homeParked]);
 
   const hrefFor = useCallback(
     (next: PortfolioView) => {
@@ -249,6 +278,10 @@ export default function PortfolioApp() {
   // layoutIds stay on home cards while open morph needs them, and whenever
   // we're on home (including the close morph).
   const homeShareLayout = isHome || morphingOpen;
+  // Keep case layoutId for the whole home-originated visit so the close morph
+  // still has a pair when the case unmounts. Dropping it only during park→flow
+  // was unnecessary — at scroll 0 the hero screen box is unchanged.
+  const caseShareLayout = !isHome && keepHome;
 
   return (
     <PortfolioContext.Provider value={{ view, iconsOn, navigate, back }}>
@@ -258,12 +291,14 @@ export default function PortfolioApp() {
             className={
               isHome
                 ? undefined
-                : // Hide immediately under the opaque case overlay. Stay in
-                  // document flow (never switch to fixed mid-visit) so parking
-                  // doesn't reflow and re-spring the hero. Prefer opacity over
-                  // visibility:hidden — Safari drops compositor layers for the
-                  // latter mid-morph.
-                  "opacity-0 pointer-events-none"
+                : homeParked
+                  ? // Out of flow after morph so the case document-scrolls
+                    // with full safe-area coverage (like a deep link).
+                    "fixed inset-0 z-0 opacity-0 pointer-events-none"
+                  : // In flow during open morph for shared-layout measurement.
+                    // Prefer opacity over visibility:hidden — Safari drops
+                    // compositor layers for the latter mid-morph.
+                    "opacity-0 pointer-events-none"
             }
             aria-hidden={!isHome}
             inert={!isHome ? true : undefined}
@@ -285,33 +320,36 @@ export default function PortfolioApp() {
             ref={caseScrollRef}
             className={
               caseOverlay
-                ? // Stable for the whole case visit — toggling overflow after
-                  // the morph reflows the hero and springs it a second time.
-                  "fixed inset-0 z-10 overflow-y-auto overscroll-none bg-background"
+                ? "fixed z-10 overflow-y-auto overscroll-none bg-background"
                 : undefined
             }
+            style={caseOverlay ? CASE_OVERLAY_STYLE : undefined}
           >
             {view === "overview" && (
               <OverviewCase
                 iconsOn={iconsOn}
+                shareLayout={caseShareLayout}
                 onHeroLayoutComplete={onHeroLayoutComplete}
               />
             )}
             {view === "ratio" && (
               <RatioCase
                 iconsOn={iconsOn}
+                shareLayout={caseShareLayout}
                 onHeroLayoutComplete={onHeroLayoutComplete}
               />
             )}
             {view === "kinja" && (
               <KinjaCase
                 iconsOn={iconsOn}
+                shareLayout={caseShareLayout}
                 onHeroLayoutComplete={onHeroLayoutComplete}
               />
             )}
             {view === "ladu" && (
               <LaduCase
                 iconsOn={iconsOn}
+                shareLayout={caseShareLayout}
                 onHeroLayoutComplete={onHeroLayoutComplete}
               />
             )}

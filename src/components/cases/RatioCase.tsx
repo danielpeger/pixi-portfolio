@@ -6,11 +6,13 @@ import { CASE_HERO_SIZES, CASE_LAYOUT_IDS } from "@/lib/portfolio";
 
 type RatioCaseProps = {
   iconsOn?: boolean;
+  shareLayout?: boolean;
   onHeroLayoutComplete?: () => void;
 };
 
 export default function RatioCase({
   iconsOn = false,
+  shareLayout = true,
   onHeroLayoutComplete,
 }: RatioCaseProps) {
   void iconsOn;
@@ -25,6 +27,7 @@ export default function RatioCase({
         className="w-full aspect-5/4 mb-8 border border-yellow-200 bg-accent-muted"
         sizes={CASE_HERO_SIZES}
         priority
+        shareLayout={shareLayout}
         onLayoutAnimationComplete={onHeroLayoutComplete}
       />
       <DeferCaseBody>
