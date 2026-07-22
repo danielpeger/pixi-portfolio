@@ -14,7 +14,7 @@ export default function OverviewCase({
   onHeroLayoutComplete,
 }: OverviewCaseProps) {
   return (
-    <main className="px-8 md:px-[72px] py-16 max-w-[960px] mx-auto text-lg md:text-base xl:text-xl">
+    <main className="px-8 md:px-[72px] pt-[max(4rem,env(safe-area-inset-top))] pb-[max(4rem,env(safe-area-inset-bottom))] max-w-[960px] mx-auto text-lg md:text-base xl:text-xl">
       <BackLink className="inline-block mb-8" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.overview}
