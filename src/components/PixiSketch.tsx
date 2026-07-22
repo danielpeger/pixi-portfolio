@@ -142,7 +142,11 @@ export default function PixiSketch({
         }),
       ]);
       const fontsPromise = document.fonts
-        ? document.fonts.load('400 140px "Jua"')
+        ? document.fonts
+            .load('400 140px "Jua"')
+            .catch(() => {
+              // Don't block the sketch if a font file fails to load.
+            })
         : Promise.resolve();
 
       // resizeTo keeps Pixi's backing store tied to the container; our own
