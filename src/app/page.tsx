@@ -1,5 +1,4 @@
-// Home UI lives in PersistentHome so the Pixi sketch stays mounted across
-// navigations. This route still exists for `/` matching and metadata.
-export default function Home() {
+// Deep-link / metadata entry. UI lives in PortfolioApp (client SPA shell).
+export default function HomePage() {
   return null;
 }

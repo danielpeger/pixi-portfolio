@@ -6,8 +6,7 @@ import {
   Playfair_Display,
   Rubik,
 } from "next/font/google";
-import PersistentHome from "@/components/PersistentHome";
-import ViewTransitions from "@/components/ViewTransitions";
+import PortfolioApp from "@/components/PortfolioApp";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -58,9 +57,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${jua.variable} ${rubik.variable} ${playfair.variable}`}
       >
-        <ViewTransitions>
-          <PersistentHome>{children}</PersistentHome>
-        </ViewTransitions>
+        {/*
+          Portfolio UI is a client SPA shell. Route `page.tsx` files exist for
+          deep links / metadata; children are unused at runtime.
+        */}
+        <PortfolioApp />
+        {children}
       </body>
     </html>
   );

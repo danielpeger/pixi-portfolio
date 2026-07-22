@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePortfolio } from "@/components/PortfolioContext";
 
 type BackLinkProps = {
   className?: string;
@@ -11,12 +11,10 @@ export default function BackLink({
   className,
   children = "← Back",
 }: BackLinkProps) {
-  const router = useRouter();
+  const { back } = usePortfolio();
 
-  // history.back() → popstate → ViewTransitions wraps it in startViewTransition
-  // and restores the prior scroll position before the new snapshot.
   return (
-    <button type="button" className={className} onClick={() => router.back()}>
+    <button type="button" className={className} onClick={() => back()}>
       {children}
     </button>
   );
