@@ -49,6 +49,7 @@ export default function HomeContent({
     : new URLSearchParams();
   const overviewHref = withFeatureParams("/overview", featureParams);
   const ratioHref = withFeatureParams("/ratio", featureParams);
+  const laduHref = withFeatureParams("/ladu", featureParams);
   const kinjaHref = withFeatureParams("/kinja", featureParams);
 
   return (
@@ -252,6 +253,34 @@ export default function HomeContent({
             </p>{" "}
           </TransitionLink>
         </div>
+      </section>
+      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
+        <TransitionLink
+          href={laduHref}
+          className="block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16"
+        >
+          <div
+            data-vt="ladu-image"
+            className={`relative w-full aspect-5/4 rounded-[20px] overflow-hidden mb-2 ${
+              iconsOn
+                ? "border bg-gray-50"
+                : "border border-yellow-200 bg-accent-muted"
+            }`}
+          >
+            <Image
+              src="/ladu.png"
+              alt="Ladu"
+              fill
+              className="object-cover"
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 712px"
+            />
+          </div>
+          <p>
+            Ladu — project card placeholder. Swap this blurb for the real
+            summary when the case study is ready.
+          </p>
+        </TransitionLink>
       </section>
     </main>
   );
