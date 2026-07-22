@@ -157,10 +157,25 @@ export default function PortfolioApp() {
 
   useLayoutEffect(() => {
     if (!caseOverlay) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const html = document.documentElement;
+    const body = document.body;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyOverscroll: body.style.overscrollBehavior,
+    };
+    // Lock both roots — body-only overflow:hidden still lets iOS rubber-band
+    // the document and flash gaps above/below the fixed case scroller.
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
     return () => {
-      document.body.style.overflow = prev;
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
+      html.style.overscrollBehavior = prev.htmlOverscroll;
+      body.style.overscrollBehavior = prev.bodyOverscroll;
     };
   }, [caseOverlay]);
 
@@ -272,7 +287,7 @@ export default function PortfolioApp() {
               caseOverlay
                 ? // Stable for the whole case visit — toggling overflow after
                   // the morph reflows the hero and springs it a second time.
-                  "fixed inset-0 z-10 overflow-y-auto bg-background"
+                  "fixed inset-0 z-10 overflow-y-auto overscroll-none bg-background"
                 : undefined
             }
           >

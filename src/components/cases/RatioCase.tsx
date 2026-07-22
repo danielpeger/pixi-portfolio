@@ -16,7 +16,7 @@ export default function RatioCase({
   void iconsOn;
 
   return (
-    <main className="px-8 md:px-[72px] pt-[max(4rem,env(safe-area-inset-top))] pb-[max(4rem,env(safe-area-inset-bottom))] max-w-[960px] mx-auto">
+    <main className="pl-[max(2rem,env(safe-area-inset-left,0px))] pr-[max(2rem,env(safe-area-inset-right,0px))] md:px-[72px] pt-[max(4rem,env(safe-area-inset-top,0px))] pb-[max(4rem,env(safe-area-inset-bottom,0px))] max-w-[960px] mx-auto">
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.ratio}
