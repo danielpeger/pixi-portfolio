@@ -1,3 +1,4 @@
+import { caseHeroes } from "@/assets/case-heroes";
 import BackLink from "@/components/BackLink";
 import DeferCaseBody from "@/components/DeferCaseBody";
 import SharedCaseImage from "@/components/SharedCaseImage";
@@ -19,7 +20,7 @@ export default function LaduCase({
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.ladu}
-        src="/ladu.png"
+        image={caseHeroes.ladu}
         alt="Ladu"
         className="w-full aspect-5/4 mb-8 border border-yellow-200 bg-accent-muted"
         sizes={CASE_HERO_SIZES}

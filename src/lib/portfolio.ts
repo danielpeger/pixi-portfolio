@@ -33,7 +33,7 @@ export const sharedLayoutTransition = {
   mass: 0.85,
 };
 
-/** Same sizes on home cards + case heroes so Next serves one cached bitmap. */
+/** Same sizes on home cards + case heroes so one srcset entry is preferred. */
 export const CASE_HERO_SIZES = "(max-width: 960px) 100vw, 960px";
 
 export function isCaseView(view: PortfolioView): view is CaseView {

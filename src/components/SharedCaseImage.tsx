@@ -1,8 +1,8 @@
-"use client";
-
 import { useState } from "react";
-import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
+import OptimizedImage, {
+  type PictureImage,
+} from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
 import {
   type CaseLayoutId,
@@ -14,7 +14,7 @@ const MORPH_Z_INDEX = 9999;
 
 type SharedCaseImageProps = {
   layoutId: CaseLayoutId;
-  src: string;
+  image: PictureImage;
   alt: string;
   className?: string;
   sizes: string;
@@ -34,7 +34,7 @@ type SharedCaseImageProps = {
 
 export default function SharedCaseImage({
   layoutId,
-  src,
+  image,
   alt,
   className,
   sizes,
@@ -77,16 +77,13 @@ export default function SharedCaseImage({
         className="absolute inset-0 overflow-hidden"
         style={{ borderRadius: "inherit" }}
       >
-        <Image
-          src={src}
+        <OptimizedImage
+          image={image}
           alt={alt}
           fill
           className="object-cover [transform:translateZ(0)]"
           sizes={sizes}
-          priority={priority}
-          // Decode before first paint when prioritized so Safari doesn't
-          // show an empty frame during the shared-layout projection.
-          loading={priority ? "eager" : undefined}
+          loading={priority ? "eager" : "lazy"}
         />
       </div>
     </motion.div>

@@ -1,14 +1,10 @@
-"use client";
-
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-  Suspense,
 } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
 import { LayoutGroup, useReducedMotion } from "motion/react";
 import HomeContent from "@/components/HomeContent";
 import OverviewCase from "@/components/cases/OverviewCase";
@@ -39,18 +35,17 @@ const VIEW_TITLES: Record<PortfolioView, string> = {
 const MORPH_FALLBACK_MS = 900;
 
 /**
- * Client-side portfolio shell: home + case studies as views (not Next
- * navigations), so Motion layoutId shared transitions can run in-tree.
- * URLs stay real via history.pushState for deep links / back-forward.
+ * Client-side portfolio shell: home + case studies as views so Motion
+ * layoutId shared transitions can run in-tree. URLs stay real via
+ * history.pushState for deep links / back-forward.
  */
 export default function PortfolioApp() {
-  const pathname = usePathname();
   const reduceMotion = useReducedMotion();
   const [view, setView] = useState<PortfolioView>(() =>
-    viewFromPath(pathname),
+    viewFromPath(window.location.pathname),
   );
   const [keepHome, setKeepHome] = useState(
-    () => viewFromPath(pathname) === "home",
+    () => viewFromPath(window.location.pathname) === "home",
   );
   /**
    * After the open morph, drop home layoutIds so they don't keep pairing
@@ -58,7 +53,7 @@ export default function PortfolioApp() {
    * (switching it to `fixed` was reflowing the hero and springing twice).
    */
   const [homeParked, setHomeParked] = useState(
-    () => viewFromPath(pathname) !== "home",
+    () => viewFromPath(window.location.pathname) !== "home",
   );
   /**
    * Card to keep above page chrome for the close morph (no scrim — home
@@ -68,9 +63,7 @@ export default function PortfolioApp() {
     null,
   );
   const [iconsOn, setIconsOn] = useState(() =>
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("icons") === "on"
-      : false,
+    isIconsOn(new URLSearchParams(window.location.search)),
   );
 
   const currentView = useRef(view);
@@ -106,10 +99,6 @@ export default function PortfolioApp() {
   }, [keepHome]);
 
   useEffect(() => {
-    setView(viewFromPath(pathname));
-  }, [pathname]);
-
-  useEffect(() => {
     document.title = VIEW_TITLES[view];
   }, [view]);
 
@@ -129,6 +118,7 @@ export default function PortfolioApp() {
       const next = viewFromPath(window.location.pathname);
       if (next === "home") beginCloseElevate(currentView.current);
       isBackRef.current = true;
+      setIconsOn(isIconsOn(new URLSearchParams(window.location.search)));
       setView(next);
     };
     window.addEventListener("popstate", onPopState);
@@ -248,10 +238,6 @@ export default function PortfolioApp() {
   return (
     <PortfolioContext.Provider value={{ view, iconsOn, navigate, back }}>
       <LayoutGroup id="portfolio">
-        <Suspense fallback={null}>
-          <IconsOnSync onChange={setIconsOn} />
-        </Suspense>
-
         {keepHome && (
           <div
             className={
@@ -319,12 +305,4 @@ export default function PortfolioApp() {
       </LayoutGroup>
     </PortfolioContext.Provider>
   );
-}
-
-function IconsOnSync({ onChange }: { onChange: (value: boolean) => void }) {
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    onChange(isIconsOn(searchParams));
-  }, [searchParams, onChange]);
-  return null;
 }

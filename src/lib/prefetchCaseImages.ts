@@ -1,34 +1,36 @@
-/** Hero images shared between home cards and case-study views. */
+import { caseHeroes } from "@/assets/case-heroes";
+import { pictureSrc } from "@/components/OptimizedImage";
+
 const CASE_IMAGES = [
-  "/overview.png",
-  "/ratio.png",
-  "/kinja.png",
-  "/ladu.png",
+  caseHeroes.overview,
+  caseHeroes.ratio,
+  caseHeroes.kinja,
+  caseHeroes.ladu,
 ] as const;
 
 let started = false;
 
 /**
- * Warm the optimized hero bitmaps Next will serve for CASE_HERO_SIZES
- * (~960px → w=1080), so shared-layout morphs don't wait on decode.
+ * Warm hero bitmaps used by home cards + case views so shared-layout
+ * morphs don't wait on decode.
  */
 export function prefetchCaseImages() {
   if (typeof window === "undefined" || started) return;
   started = true;
 
-  for (const src of CASE_IMAGES) {
-    const optimized = `/_next/image?url=${encodeURIComponent(src)}&w=1080&q=75`;
-    if (!document.querySelector(`link[rel="preload"][href="${optimized}"]`)) {
+  for (const image of CASE_IMAGES) {
+    const href = pictureSrc(image);
+    if (!document.querySelector(`link[rel="preload"][href="${href}"]`)) {
       const link = document.createElement("link");
       link.rel = "preload";
       link.as = "image";
-      link.href = optimized;
+      link.href = href;
       document.head.appendChild(link);
     }
 
     const img = new Image();
     img.decoding = "async";
-    img.src = optimized;
+    img.src = href;
     void img.decode().catch(() => {
       // Ignore decode failures; preload still helps the HTTP cache.
     });

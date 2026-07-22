@@ -1,5 +1,3 @@
-"use client";
-
 import { usePortfolio } from "@/components/PortfolioContext";
 
 type BackLinkProps = {

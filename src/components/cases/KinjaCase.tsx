@@ -1,7 +1,11 @@
 import { Fragment, type ReactNode } from "react";
-import Image from "next/image";
+import { caseHeroes } from "@/assets/case-heroes";
+import { kinjaImages } from "@/assets/kinja-images";
 import BackLink from "@/components/BackLink";
 import DeferCaseBody from "@/components/DeferCaseBody";
+import OptimizedImage, {
+  type PictureImage,
+} from "@/components/OptimizedImage";
 import CaseVideo from "@/components/kinja/CaseVideo";
 import CompareImages from "@/components/kinja/CompareImages";
 import SharedCaseImage from "@/components/SharedCaseImage";
@@ -184,7 +188,12 @@ function UserGoalTable() {
 }
 
 function LearningsTable() {
-  const learnings = [
+  const learnings: {
+    positive: boolean;
+    title: string;
+    quotes: string[];
+    image: PictureImage;
+  }[] = [
     {
       positive: false,
       title: "Mix site logos with section logos",
@@ -192,7 +201,7 @@ function LearningsTable() {
         "“I didn’t notice the G…I guess I thought it was connected to the other logo.”",
         "“I thought Paleofuture was a new blog.”",
       ],
-      image: "/kinjanav/learnings-verticallogo.jpg",
+      image: kinjaImages.learnings.verticallogo,
     },
     {
       positive: true,
@@ -200,7 +209,7 @@ function LearningsTable() {
       quotes: [
         "Most participants said they'd click the top logo to find out more about the site.",
       ],
-      image: "/kinjanav/learnings-logo.jpg",
+      image: kinjaImages.learnings.logo,
     },
     {
       positive: true,
@@ -208,7 +217,7 @@ function LearningsTable() {
       quotes: [
         "People not familiar with Gizmodo or Paleofuture tended to reference the tagline when asked to describe the site.",
       ],
-      image: "/kinjanav/learnings-tagline.jpg",
+      image: kinjaImages.learnings.tagline,
     },
     {
       positive: false,
@@ -217,14 +226,14 @@ function LearningsTable() {
         "“This looks like an ad.”",
         "“If paleofuture is the name of the article?”",
       ],
-      image: "/kinjanav/learnings-verticalheaders.jpg",
+      image: kinjaImages.learnings.verticalheaders,
     },
     {
       positive: true,
       title:
         "A tab-bar like section nav with strong accent on the active item",
       quotes: ["“Paleofuture is a section of Gizmodo.”"],
-      image: "/kinjanav/learnings-tabbar.jpg",
+      image: kinjaImages.learnings.tabbar,
     },
     {
       positive: false,
@@ -233,7 +242,7 @@ function LearningsTable() {
         "“The explore button is really ambiguous.”",
         "“I think the grid icon would take me to more articles.”",
       ],
-      image: "/kinjanav/learnings-bespoke.jpg",
+      image: kinjaImages.learnings.bespoke,
     },
     {
       positive: true,
@@ -241,7 +250,7 @@ function LearningsTable() {
       quotes: [
         "“Kibbon” achieved 100% completion rate on task #3 and #4.",
       ],
-      image: "/kinjanav/learnings-familiar.jpg",
+      image: kinjaImages.learnings.familiar,
     },
     {
       positive: true,
@@ -249,7 +258,7 @@ function LearningsTable() {
       quotes: [
         "“If you don't know what something is, you don't have to click on it to figure it out, you see it right there.”",
       ],
-      image: "/kinjanav/learnings-magiccards.jpg",
+      image: kinjaImages.learnings.magiccards,
     },
   ];
 
@@ -261,12 +270,11 @@ function LearningsTable() {
           className="grid gap-4 border-b border-separator pb-8 last:border-0 last:pb-0 sm:grid-cols-[auto_1fr_minmax(0,45%)]"
         >
           <div className="pt-1">
-            <Image
+            <img
               src={item.positive ? "/kinjanav/yep.svg" : "/kinjanav/nope.svg"}
               alt={item.positive ? "Worked" : "Didn't work"}
               width={17}
               height={15}
-              unoptimized
             />
           </div>
           <div className="space-y-2 min-w-0">
@@ -287,13 +295,12 @@ function LearningsTable() {
             ))}
           </div>
           <div className="relative aspect-4/3 overflow-hidden rounded-xl sm:aspect-auto sm:min-h-[120px]">
-            <Image
-              src={item.image}
+            <OptimizedImage
+              image={item.image}
               alt=""
               fill
               className="object-cover"
               sizes="(max-width: 640px) 100vw, 280px"
-              unoptimized
             />
           </div>
         </div>
@@ -314,13 +321,12 @@ function OutcomeStat({
   return (
     <div>
       <div className="flex items-center gap-2 text-3xl xl:text-4xl font-medium text-emerald-600 dark:text-emerald-400">
-        <Image
+        <img
           src={`/kinjanav/upArrow${arrow}.svg`}
           alt=""
           width={28}
           height={40}
           className="h-8 w-auto xl:h-10"
-          unoptimized
         />
         {value}
       </div>
@@ -343,7 +349,7 @@ export default function KinjaCase({
       <BackLink className="inline-block mb-8" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.kinja}
-        src="/kinja.png"
+        image={caseHeroes.kinja}
         alt="Kinja"
         className={`w-full aspect-5/4 mb-8 ${
           iconsOn
@@ -594,13 +600,12 @@ export default function KinjaCase({
               </p>
               <CaseFigure caption="Some of our initial sketches">
                 <div className="relative aspect-4/3 overflow-hidden rounded-[20px]">
-                  <Image
-                    src="/kinjanav/sketches-1.jpg"
+                  <OptimizedImage
+                    image={kinjaImages.sketches1}
                     alt="Initial navigation sketches"
                     fill
                     className="object-cover"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>
@@ -655,37 +660,34 @@ export default function KinjaCase({
               </p>
               <CaseFigure caption='"Kibbon" uses a ribbon-like network nav to visualize hierarchy. This is the prototype I worked on.'>
                 <div className="relative aspect-4/3 overflow-hidden rounded-[20px]">
-                  <Image
-                    src="/kinjanav/kibbon.jpg"
+                  <OptimizedImage
+                    image={kinjaImages.kibbon}
                     alt="Kibbon prototype"
                     fill
                     className="object-cover"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>
               <CaseFigure caption='"Magic cards", a concept centered around extended branding and a full-page network nav with colorful tiles.'>
                 <div className="relative aspect-4/3 overflow-hidden rounded-[20px]">
-                  <Image
-                    src="/kinjanav/magiccards.jpg"
+                  <OptimizedImage
+                    image={kinjaImages.magiccards}
                     alt="Magic cards prototype"
                     fill
                     className="object-cover"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>
               <CaseFigure caption='The "ODC" prototype was based on a previous collaboration with a design agency. It treats the section nav as a tab-bar and the network nav as a slide-over menu.'>
                 <div className="relative aspect-4/3 overflow-hidden rounded-[20px]">
-                  <Image
-                    src="/kinjanav/odc.jpg"
+                  <OptimizedImage
+                    image={kinjaImages.odc}
                     alt="ODC prototype"
                     fill
                     className="object-cover"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>
@@ -712,13 +714,12 @@ export default function KinjaCase({
               </p>
               <CaseFigure caption="Task scoring sheet">
                 <div className="relative aspect-16/10 overflow-hidden rounded-[20px] border border-separator bg-accent-muted">
-                  <Image
-                    src="/kinjanav/scoring.png"
+                  <OptimizedImage
+                    image={kinjaImages.scoring}
                     alt="Task scoring sheet"
                     fill
                     className="object-contain"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>
@@ -729,13 +730,12 @@ export default function KinjaCase({
               </p>
               <CaseFigure caption="Screen recordings from the first round of interviews (shared with participants' consent)">
                 <div className="relative aspect-16/10 overflow-hidden rounded-[20px]">
-                  <Image
-                    src="/kinjanav/interviews.png"
+                  <OptimizedImage
+                    image={kinjaImages.interviews}
                     alt="Interview screen recordings collage"
                     fill
                     className="object-cover"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>
@@ -814,8 +814,8 @@ export default function KinjaCase({
                 }
               >
                 <CompareImages
-                  leftSrc="/kinjanav/homepage-after.jpg"
-                  rightSrc="/kinjanav/homepage-before.jpg"
+                  left={kinjaImages.homepageAfter}
+                  right={kinjaImages.homepageBefore}
                 />
               </CaseFigure>
               <p>
@@ -839,8 +839,8 @@ export default function KinjaCase({
                 }
               >
                 <CompareImages
-                  leftSrc="/kinjanav/article-after.jpg"
-                  rightSrc="/kinjanav/article-before.jpg"
+                  left={kinjaImages.articleAfter}
+                  right={kinjaImages.articleBefore}
                 />
               </CaseFigure>
               <p>
@@ -862,8 +862,8 @@ export default function KinjaCase({
                 }
               >
                 <CompareImages
-                  leftSrc="/kinjanav/vertical-after.jpg"
-                  rightSrc="/kinjanav/vertical-before.jpg"
+                  left={kinjaImages.verticalAfter}
+                  right={kinjaImages.verticalBefore}
                 />
               </CaseFigure>
               <p>
@@ -878,13 +878,12 @@ export default function KinjaCase({
               </p>
               <CaseFigure caption="The new Explore page.">
                 <div className="relative aspect-4/3 overflow-hidden rounded-[20px]">
-                  <Image
-                    src="/kinjanav/explore.jpg"
+                  <OptimizedImage
+                    image={kinjaImages.explore}
                     alt="Explore page"
                     fill
                     className="object-cover"
                     sizes="(max-width: 960px) 100vw, 720px"
-                    unoptimized
                   />
                 </div>
               </CaseFigure>

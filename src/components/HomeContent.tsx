@@ -1,5 +1,4 @@
-"use client";
-
+import { caseHeroes } from "@/assets/case-heroes";
 import PixiSketch from "@/components/PixiSketch";
 import SharedCaseImage from "@/components/SharedCaseImage";
 import ViewLink from "@/components/ViewLink";
@@ -37,7 +36,6 @@ function FloatIcon({
 }) {
   return (
     // Native img so shape-outside can use the SVG alpha channel exactly.
-    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt=""
@@ -196,7 +194,7 @@ export default function HomeContent({
               layoutId={CASE_LAYOUT_IDS.overview}
               shareLayout={shareLayout}
               {...elevateProps(CASE_LAYOUT_IDS.overview)}
-              src="/overview.png"
+              image={caseHeroes.overview}
               alt="Overview"
               className={`w-full aspect-5/4 mb-2 ${
                 iconsOn
@@ -224,7 +222,7 @@ export default function HomeContent({
             layoutId={CASE_LAYOUT_IDS.ratio}
             shareLayout={shareLayout}
             {...elevateProps(CASE_LAYOUT_IDS.ratio)}
-            src="/ratio.png"
+            image={caseHeroes.ratio}
             alt="Ratio"
             className={`w-full aspect-5/4 mb-2 ${
               iconsOn
@@ -252,7 +250,7 @@ export default function HomeContent({
               layoutId={CASE_LAYOUT_IDS.kinja}
               shareLayout={shareLayout}
               {...elevateProps(CASE_LAYOUT_IDS.kinja)}
-              src="/kinja.png"
+              image={caseHeroes.kinja}
               alt="Kinja"
               className={`w-full aspect-5/4 mb-2 ${
                 iconsOn
@@ -282,7 +280,7 @@ export default function HomeContent({
             layoutId={CASE_LAYOUT_IDS.ladu}
             shareLayout={shareLayout}
             {...elevateProps(CASE_LAYOUT_IDS.ladu)}
-            src="/ladu.png"
+            image={caseHeroes.ladu}
             alt="Ladu"
             className={`w-full aspect-5/4 mb-2 ${
               iconsOn

@@ -1,3 +1,4 @@
+import { caseHeroes } from "@/assets/case-heroes";
 import BackLink from "@/components/BackLink";
 import DeferCaseBody from "@/components/DeferCaseBody";
 import SharedCaseImage from "@/components/SharedCaseImage";
@@ -17,7 +18,7 @@ export default function OverviewCase({
       <BackLink className="inline-block mb-8" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.overview}
-        src="/overview.png"
+        image={caseHeroes.overview}
         alt="Overview"
         className={`w-full aspect-5/4 mb-8 ${
           iconsOn

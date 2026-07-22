@@ -1,5 +1,3 @@
-"use client";
-
 import {
   useCallback,
   useEffect,
@@ -7,20 +5,22 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import Image from "next/image";
+import OptimizedImage, {
+  type PictureImage,
+} from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
 
 type CompareImagesProps = {
-  leftSrc: string;
-  rightSrc: string;
+  left: PictureImage;
+  right: PictureImage;
   leftAlt?: string;
   rightAlt?: string;
   className?: string;
 };
 
 export default function CompareImages({
-  leftSrc,
-  rightSrc,
+  left,
+  right,
   leftAlt = "After",
   rightAlt = "Before",
   className,
@@ -81,26 +81,24 @@ export default function CompareImages({
       aria-label="Compare before and after"
       tabIndex={0}
     >
-      <Image
-        src={rightSrc}
+      <OptimizedImage
+        image={right}
         alt={rightAlt}
         fill
         className="object-cover object-left"
         sizes="(max-width: 960px) 100vw, 720px"
-        unoptimized
         draggable={false}
       />
       <div
         className="absolute inset-0"
         style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
       >
-        <Image
-          src={leftSrc}
+        <OptimizedImage
+          image={left}
           alt={leftAlt}
           fill
           className="object-cover object-left"
           sizes="(max-width: 960px) 100vw, 720px"
-          unoptimized
           draggable={false}
         />
       </div>

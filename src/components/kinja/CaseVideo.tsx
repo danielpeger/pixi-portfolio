@@ -1,7 +1,4 @@
-"use client";
-
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type CaseVideoProps = {
@@ -58,13 +55,12 @@ export default function CaseVideo({
           onClick={replay}
           className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded bg-foreground px-3 py-1.5 text-sm text-background transition-opacity hover:opacity-80 md:bottom-6 md:right-8"
         >
-          <Image
+          <img
             src="/kinjanav/replay.svg"
             alt=""
             width={11}
             height={15}
             className="brightness-0 invert"
-            unoptimized
           />
           Replay
         </button>

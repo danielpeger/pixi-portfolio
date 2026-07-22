@@ -1,5 +1,3 @@
-"use client";
-
 import { usePortfolio } from "@/components/PortfolioContext";
 import { pathForView, type PortfolioView } from "@/lib/portfolio";
 
