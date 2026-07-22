@@ -5,6 +5,7 @@ import {
   use,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -25,14 +26,20 @@ export const ViewTransitionsContext =
 const VT_RATIO = "ratio-image";
 const VT_OVERVIEW = "overview-image";
 const VT_KINJA = "kinja-image";
+const VT_LADU = "ladu-image";
 
-type SharedVtName = typeof VT_RATIO | typeof VT_OVERVIEW | typeof VT_KINJA;
+type SharedVtName =
+  | typeof VT_RATIO
+  | typeof VT_OVERVIEW
+  | typeof VT_KINJA
+  | typeof VT_LADU;
 
 function pageKind(path: string) {
   if (path === "/") return "home";
   if (path.startsWith("/ratio")) return "ratio";
   if (path.startsWith("/overview")) return "overview";
   if (path.startsWith("/kinja")) return "kinja";
+  if (path.startsWith("/ladu")) return "ladu";
   return "other";
 }
 
@@ -41,6 +48,7 @@ function sharedVtForTransition(from: string, to: string): SharedVtName | null {
   if (kinds.has("home") && kinds.has("ratio")) return VT_RATIO;
   if (kinds.has("home") && kinds.has("overview")) return VT_OVERVIEW;
   if (kinds.has("home") && kinds.has("kinja")) return VT_KINJA;
+  if (kinds.has("home") && kinds.has("ladu")) return VT_LADU;
   return null;
 }
 
@@ -68,6 +76,7 @@ function untagAllSharedElements() {
   untagSharedElements(VT_RATIO);
   untagSharedElements(VT_OVERVIEW);
   untagSharedElements(VT_KINJA);
+  untagSharedElements(VT_LADU);
 }
 
 function isVtVisible(el: HTMLElement) {
@@ -111,6 +120,8 @@ export default function ViewTransitions({
   const scrollPositions = useRef(new Map<string, number>());
   const pendingDirection = useRef<TransitionDirection | null>(null);
   const isBackRef = useRef(false);
+  /** Hold scroll while leaving a page so Next/Safari can't flash y=0 mid-VT. */
+  const lockedScrollY = useRef<number | null>(null);
 
   const [currentViewTransition, setCurrentViewTransition] = useState<
     null | [Promise<void>, () => void]
@@ -129,6 +140,13 @@ export default function ViewTransitions({
 
   useEffect(() => {
     const onScroll = () => {
+      if (
+        lockedScrollY.current !== null &&
+        Math.abs(window.scrollY - lockedScrollY.current) > 1
+      ) {
+        window.scrollTo(0, lockedScrollY.current);
+        return;
+      }
       scrollPositions.current.set(currentPathname.current, window.scrollY);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -139,6 +157,8 @@ export default function ViewTransitions({
     if (!("startViewTransition" in document)) return;
 
     scrollPositions.current.set(currentPathname.current, window.scrollY);
+    // Lock current scroll until we intentionally restore/reset in layout effect.
+    lockedScrollY.current = window.scrollY;
     pendingDirection.current = direction;
     isBackRef.current = isBack;
 
@@ -191,7 +211,8 @@ export default function ViewTransitions({
       }
 
       beginViewTransition({ from: currentPathname.current, to: href }, false);
-      router.push(href);
+      // Prevent Next.js from scrolling the still-visible page to top mid-transition.
+      router.push(href, { scroll: false });
     },
     [beginViewTransition, router],
   );
@@ -208,7 +229,8 @@ export default function ViewTransitions({
     return () => window.removeEventListener("popstate", onPopState);
   }, [beginViewTransition]);
 
-  useEffect(() => {
+  // useLayoutEffect: apply scroll before paint so Safari/WebKit never flash y=0.
+  useLayoutEffect(() => {
     if (!transitionRef.current) {
       currentPathname.current = pathname;
       return;
@@ -218,6 +240,8 @@ export default function ViewTransitions({
 
     (async () => {
       const y = scrollPositions.current.get(pathname) ?? 0;
+      // Release lock, then apply the intentional scroll for this navigation.
+      lockedScrollY.current = null;
       // Push navigations start at the top; back/forward restore.
       window.scrollTo({
         top: isBackRef.current ? y : 0,
@@ -237,19 +261,22 @@ export default function ViewTransitions({
             ? VT_OVERVIEW
             : kind === "kinja"
               ? VT_KINJA
-              : pendingDirection.current
-                ? sharedVtForTransition(
-                    pendingDirection.current.from,
-                    pendingDirection.current.to,
-                  )
-                : null;
+              : kind === "ladu"
+                ? VT_LADU
+                : pendingDirection.current
+                  ? sharedVtForTransition(
+                      pendingDirection.current.from,
+                      pendingDirection.current.to,
+                    )
+                  : null;
 
       if (
         sharedVt &&
         (kind === "home" ||
           kind === "ratio" ||
           kind === "overview" ||
-          kind === "kinja")
+          kind === "kinja" ||
+          kind === "ladu")
       ) {
         untagAllSharedElements();
         tagSharedElement(sharedVt);

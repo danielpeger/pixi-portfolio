@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import HomeContent from "@/components/HomeContent";
 import { isIconsOn } from "@/lib/features";
+import { prefetchCaseImages } from "@/lib/prefetchCaseImages";
 
 /**
  * Keeps the home page (and Pixi sketch) mounted after the first visit to `/`,
@@ -26,6 +27,10 @@ export default function PersistentHome({
   useEffect(() => {
     if (isHome) setKeepHome(true);
   }, [isHome]);
+
+  useEffect(() => {
+    if (keepHome) prefetchCaseImages();
+  }, [keepHome]);
 
   return (
     <>
