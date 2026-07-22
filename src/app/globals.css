@@ -205,6 +205,15 @@
       color-scheme: dark;
     }
   }
+
+  ::view-transition {
+    pointer-events: none;
+  }
+
+  :root {
+    view-transition-name: none;
+  }
+
   .ratio-hero {
     view-transition-name: ratio-image;
   }
