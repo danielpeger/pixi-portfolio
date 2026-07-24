@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import OptimizedImage, {
-  type PictureImage,
-} from "@/components/OptimizedImage";
+import OptimizedImage, { type PictureImage } from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
-import {
-  type CaseLayoutId,
-  sharedLayoutTransition,
-} from "@/lib/portfolio";
+import { type CaseLayoutId, sharedLayoutTransition } from "@/lib/portfolio";
 
 /** Above page chrome (Pixi, copy, other cards) while a shared-layout morph runs. */
 const MORPH_Z_INDEX = 9999;
@@ -53,6 +48,7 @@ export default function SharedCaseImage({
       // Always the same component type so the <img> isn't remounted when
       // shareLayout toggles (remounts blank the bitmap mid-morph in Safari).
       layoutId={enabled ? layoutId : undefined}
+      layoutCrossfade={false}
       transition={sharedLayoutTransition}
       className={cn("relative", className)}
       style={{
