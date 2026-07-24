@@ -18,6 +18,7 @@ export default function OverviewCase({
       <BackLink className="inline-block mb-8" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.overview}
+        lightboxLayoutId="lightbox-overview-hero"
         image={caseHeroes.overview}
         alt="Overview"
         className={`w-full aspect-5/4 mb-8 ${

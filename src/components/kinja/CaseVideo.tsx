@@ -1,4 +1,11 @@
-import { useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import Lightbox from "@/components/Lightbox";
 import { cn } from "@/lib/utils";
 
 type CaseVideoProps = {
@@ -6,17 +13,38 @@ type CaseVideoProps = {
   loop?: boolean;
   bgColor?: string;
   className?: string;
+  videoClassName?: string;
+  /** Seek to this time (seconds) once the video can play. */
+  startAt?: number;
 };
 
-export default function CaseVideo({
-  src,
-  loop = false,
-  bgColor,
-  className,
-}: CaseVideoProps) {
+const CaseVideo = forwardRef<HTMLVideoElement, CaseVideoProps>(function CaseVideo(
+  { src, loop = false, bgColor, className, videoClassName, startAt },
+  ref,
+) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  useImperativeHandle(ref, () => videoRef.current!, []);
   const [showReplay, setShowReplay] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || startAt == null) return;
+
+    const time = startAt;
+
+    function seek() {
+      if (video) video.currentTime = time;
+    }
+
+    if (video.readyState >= 1) {
+      seek();
+      return;
+    }
+
+    video.addEventListener("loadedmetadata", seek, { once: true });
+    return () => video.removeEventListener("loadedmetadata", seek);
+  }, [startAt, videoRef]);
 
   function handleEnded() {
     if (!loop) setShowReplay(true);
@@ -37,7 +65,7 @@ export default function CaseVideo({
     >
       <video
         ref={videoRef}
-        className="block w-full"
+        className={cn("block w-full select-none", videoClassName)}
         preload="auto"
         autoPlay
         muted
@@ -67,4 +95,45 @@ export default function CaseVideo({
       )}
     </div>
   );
+});
+
+type LightboxCaseVideoProps = CaseVideoProps & {
+  layoutId: string;
+  aspectRatio?: string;
+  ariaLabel: string;
+  frameClassName?: string;
+};
+
+export function LightboxCaseVideo({
+  layoutId,
+  aspectRatio = "16 / 9",
+  ariaLabel,
+  className,
+  frameClassName,
+  ...videoProps
+}: LightboxCaseVideoProps) {
+  const thumbRef = useRef<HTMLVideoElement>(null);
+  const [resumeAt, setResumeAt] = useState<number | undefined>();
+
+  return (
+    <Lightbox
+      layoutId={layoutId}
+      aspectRatio={aspectRatio}
+      ariaLabel={ariaLabel}
+      className={className}
+      frameClassName={cn("relative w-full overflow-hidden", frameClassName)}
+      onOpenChange={(next) => {
+        if (next) setResumeAt(thumbRef.current?.currentTime ?? 0);
+      }}
+    >
+      <CaseVideo
+        {...videoProps}
+        ref={thumbRef}
+        startAt={resumeAt}
+        className="block w-full rounded-[inherit]"
+      />
+    </Lightbox>
+  );
 }
+
+export default CaseVideo;

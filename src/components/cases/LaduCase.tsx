@@ -20,6 +20,7 @@ export default function LaduCase({
       <BackLink className="inline-block mb-8 text-lg md:text-base xl:text-xl" />
       <SharedCaseImage
         layoutId={CASE_LAYOUT_IDS.ladu}
+        lightboxLayoutId="lightbox-ladu-hero"
         image={caseHeroes.ladu}
         alt="Ladu"
         className="w-full aspect-5/4 mb-8 border border-yellow-200 bg-accent-muted"
