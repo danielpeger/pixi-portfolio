@@ -9,13 +9,11 @@ import {
 import { createPortal } from "react-dom";
 import { Dialog } from "@base-ui/react/dialog";
 import { motion, useReducedMotion } from "motion/react";
-import OptimizedImage, {
-  type PictureImage,
-} from "@/components/OptimizedImage";
+import OptimizedImage, { type PictureImage } from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
 import { sharedLayoutTransition } from "@/lib/portfolio";
 
-const STAGE_INSET = 48;
+const STAGE_INSET = 32;
 const BORDER_RADIUS = 20;
 const BACKDROP_TRANSITION_MS = 200;
 
@@ -168,15 +166,11 @@ export default function Lightbox({
             frameClassName,
             active && "invisible pointer-events-none",
           )}
-          style={
-            active
-              ? {
-                  ...frameStyle,
-                  aspectRatio: aspectRatio.replace(/\s+/g, " "),
-                  width: "100%",
-                }
-              : frameStyle
-          }
+          style={{
+            ...frameStyle,
+            aspectRatio: aspectRatio.replace(/\s+/g, " "),
+            width: "100%",
+          }}
           aria-hidden={active || undefined}
         >
           {!active ? children : null}
@@ -206,8 +200,10 @@ export default function Lightbox({
             <motion.div
               key={`${layoutId}-stage`}
               className={cn(
-                "fixed z-[10001] cursor-zoom-out select-none overflow-hidden",
+                // Frame styles first so `fixed` below wins over any `relative`
+                // from frameClassName (tailwind-merge keeps the last position).
                 expandedFrameClassName ?? frameClassName,
+                "fixed z-[10001] cursor-zoom-out select-none overflow-hidden",
               )}
               initial={instant ? false : origin}
               animate={{
@@ -226,7 +222,9 @@ export default function Lightbox({
                 if (!openRef.current) setActive(false);
               }}
             >
-              {children}
+              <div className="absolute inset-0 h-full w-full overflow-hidden rounded-[inherit]">
+                {children}
+              </div>
             </motion.div>
           </>,
           document.body,

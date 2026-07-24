@@ -4,6 +4,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  type MouseEvent,
 } from "react";
 import Lightbox from "@/components/Lightbox";
 import { cn } from "@/lib/utils";
@@ -50,7 +51,8 @@ const CaseVideo = forwardRef<HTMLVideoElement, CaseVideoProps>(function CaseVide
     if (!loop) setShowReplay(true);
   }
 
-  function replay() {
+  function replay(e: MouseEvent) {
+    e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
     video.currentTime = 0;
@@ -130,7 +132,8 @@ export function LightboxCaseVideo({
         {...videoProps}
         ref={thumbRef}
         startAt={resumeAt}
-        className="block w-full rounded-[inherit]"
+        className="absolute inset-0 h-full w-full rounded-[inherit]"
+        videoClassName="h-full w-full object-contain"
       />
     </Lightbox>
   );
