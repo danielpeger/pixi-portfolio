@@ -16,6 +16,26 @@ import { sharedLayoutTransition } from "@/lib/portfolio";
 const STAGE_INSET = 32;
 const BORDER_RADIUS = 20;
 const BACKDROP_TRANSITION_MS = 200;
+/** Tailwind `md` — lightbox is desktop-only below this. */
+const MD_UP_QUERY = "(min-width: 768px)";
+
+function useMdUp() {
+  const [mdUp, setMdUp] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia(MD_UP_QUERY).matches
+      : false,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(MD_UP_QUERY);
+    const onChange = () => setMdUp(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return mdUp;
+}
 
 type Rect = {
   top: number;
@@ -76,8 +96,10 @@ export default function Lightbox({
   onOpenChange,
 }: LightboxProps) {
   const reduceMotion = useReducedMotion() ?? false;
+  const mdUp = useMdUp();
   const thumbRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(false);
+  const onOpenChangeRef = useRef(onOpenChange);
 
   const [open, setOpen] = useState(false);
   /** Portal stays mounted through the close morph. */
@@ -86,6 +108,7 @@ export default function Lightbox({
   const [expanded, setExpanded] = useState<Rect | null>(null);
 
   openRef.current = open;
+  onOpenChangeRef.current = onOpenChange;
 
   function blockSelect(e: MouseEvent) {
     e.preventDefault();
@@ -101,6 +124,7 @@ export default function Lightbox({
   }
 
   function setOpenAndNotify(next: boolean) {
+    if (next && !window.matchMedia(MD_UP_QUERY).matches) return;
     const m = measure();
     if (next) {
       if (!m) return;
@@ -132,6 +156,18 @@ export default function Lightbox({
   }
 
   useEffect(() => {
+    if (mdUp) return;
+    // Drop any open lightbox when crossing below md.
+    if (openRef.current) {
+      setOpen(false);
+      onOpenChangeRef.current?.(false);
+    }
+    setActive(false);
+    setOrigin(null);
+    setExpanded(null);
+  }, [mdUp]);
+
+  useEffect(() => {
     if (!active) return;
     function onResize() {
       const thumb = thumbRef.current;
@@ -146,6 +182,24 @@ export default function Lightbox({
   const frameStyle = { borderRadius: BORDER_RADIUS } as const;
   const target = open ? expanded : origin;
   const instant = reduceMotion || !origin || !expanded || !target;
+
+  if (!mdUp) {
+    return (
+      <div className={cn("select-none", className)}>
+        <div
+          ref={thumbRef}
+          className={cn("relative select-none", frameClassName)}
+          style={{
+            ...frameStyle,
+            aspectRatio: aspectRatio.replace(/\s+/g, " "),
+            width: "100%",
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
