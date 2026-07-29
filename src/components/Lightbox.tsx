@@ -1,9 +1,12 @@
 import {
+  cloneElement,
+  isValidElement,
   useEffect,
   useRef,
   useState,
   type KeyboardEvent,
   type MouseEvent,
+  type ReactElement,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -77,6 +80,14 @@ function parseAspectRatio(aspectRatio: string) {
 function readRect(el: HTMLElement): Rect {
   const r = el.getBoundingClientRect();
   return { top: r.top, left: r.left, width: r.width, height: r.height };
+}
+
+/** Portal copy of children without stealing the thumbnail's ref. */
+function cloneForStage(children: ReactNode) {
+  if (!isValidElement(children)) return children;
+  return cloneElement(children as ReactElement<{ ref?: unknown }>, {
+    ref: null,
+  });
 }
 
 function getExpandedRect(aspectRatio: string, hasCaption: boolean): Rect {
@@ -244,16 +255,19 @@ export default function Lightbox({
             className={cn(
               "relative select-none",
               frameClassName,
-              active && "invisible pointer-events-none",
+              // Stay invisible only while open. On close, reveal immediately so
+              // the mounted thumb is waiting under the morphing stage (no remount flash).
+              active && open && "invisible pointer-events-none",
             )}
             style={{
               ...frameStyle,
               aspectRatio: aspectRatio.replace(/\s+/g, " "),
               width: "100%",
             }}
-            aria-hidden={active || undefined}
+            aria-hidden={(active && open) || undefined}
           >
-            {!active ? children : null}
+            {/* Keep children mounted while open so close doesn't remount/flash. */}
+            {children}
           </div>
         </div>
         {showClosedCaption ? (
@@ -317,7 +331,7 @@ export default function Lightbox({
               }}
             >
               <div className="absolute inset-0 h-full w-full overflow-hidden rounded-[inherit]">
-                {children}
+                {cloneForStage(children)}
               </div>
             </motion.div>
 
