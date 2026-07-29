@@ -28,6 +28,7 @@ function KinjaImageLightbox({
   className,
   objectFit = "cover",
   caption,
+  showCaption,
 }: {
   layoutId: string;
   image: PictureImage;
@@ -36,6 +37,7 @@ function KinjaImageLightbox({
   className?: string;
   objectFit?: "cover" | "contain";
   caption?: ReactNode;
+  showCaption?: boolean;
 }) {
   return (
     <Lightbox
@@ -45,6 +47,7 @@ function KinjaImageLightbox({
       className={className}
       frameClassName="h-full w-full"
       caption={caption}
+      showCaption={showCaption}
     >
       <LightboxImage
         image={image}

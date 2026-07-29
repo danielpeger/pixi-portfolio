@@ -17,8 +17,8 @@ const STAGE_INSET = 32;
 /** Tighter bottom inset so the stage sits closer to the viewport edge. */
 const STAGE_INSET_BOTTOM = 16;
 const CAPTION_GAP = 12;
-/** Space reserved under the image for an optional caption (gap + ~3 lines). */
-const CAPTION_RESERVE = 72;
+/** Space reserved under the image for an optional open-lightbox caption. */
+const CAPTION_RESERVE = 96;
 const BORDER_RADIUS = 20;
 const BACKDROP_TRANSITION_MS = 200;
 /** Tailwind `md` — lightbox is desktop-only below this. */
@@ -56,8 +56,13 @@ export type LightboxProps = {
   aspectRatio: string;
   ariaLabel: string;
   children: ReactNode;
-  /** Optional caption shown below the image only while the lightbox is open. */
+  /** Optional caption shown below the image in the open lightbox. */
   caption?: ReactNode;
+  /**
+   * When true, also show `caption` under the thumbnail while the lightbox is
+   * closed. Defaults to true whenever `caption` is set.
+   */
+  showCaption?: boolean;
   className?: string;
   frameClassName?: string;
   expandedFrameClassName?: string;
@@ -104,6 +109,7 @@ export default function Lightbox({
   ariaLabel,
   children,
   caption,
+  showCaption,
   className,
   frameClassName,
   expandedFrameClassName,
@@ -115,6 +121,7 @@ export default function Lightbox({
   const openRef = useRef(false);
   const onOpenChangeRef = useRef(onOpenChange);
   const hasCaption = Boolean(caption);
+  const showClosedCaption = hasCaption && showCaption !== false;
 
   const [open, setOpen] = useState(false);
   /** Portal stays mounted through the close morph. */
@@ -212,7 +219,7 @@ export default function Lightbox({
         >
           {children}
         </div>
-        {hasCaption ? (
+        {showClosedCaption ? (
           <div className="mt-3 text-sm text-tertiary-foreground">{caption}</div>
         ) : null}
       </div>
@@ -221,32 +228,37 @@ export default function Lightbox({
 
   return (
     <>
-      <div
-        role="button"
-        tabIndex={open || active ? -1 : 0}
-        aria-label={ariaLabel}
-        aria-expanded={open}
-        className={cn("select-none", !open && "cursor-zoom-in", className)}
-        onClick={toggleLightbox}
-        onMouseDown={blockSelect}
-        onKeyDown={onThumbKeyDown}
-      >
+      <div className="select-none">
         <div
-          ref={thumbRef}
-          className={cn(
-            "relative select-none",
-            frameClassName,
-            active && "invisible pointer-events-none",
-          )}
-          style={{
-            ...frameStyle,
-            aspectRatio: aspectRatio.replace(/\s+/g, " "),
-            width: "100%",
-          }}
-          aria-hidden={active || undefined}
+          role="button"
+          tabIndex={open || active ? -1 : 0}
+          aria-label={ariaLabel}
+          aria-expanded={open}
+          className={cn("select-none", !open && "cursor-zoom-in", className)}
+          onClick={toggleLightbox}
+          onMouseDown={blockSelect}
+          onKeyDown={onThumbKeyDown}
         >
-          {!active ? children : null}
+          <div
+            ref={thumbRef}
+            className={cn(
+              "relative select-none",
+              frameClassName,
+              active && "invisible pointer-events-none",
+            )}
+            style={{
+              ...frameStyle,
+              aspectRatio: aspectRatio.replace(/\s+/g, " "),
+              width: "100%",
+            }}
+            aria-hidden={active || undefined}
+          >
+            {!active ? children : null}
+          </div>
         </div>
+        {showClosedCaption && !active ? (
+          <div className="mt-3 text-sm text-tertiary-foreground">{caption}</div>
+        ) : null}
       </div>
 
       {active &&
@@ -308,7 +320,7 @@ export default function Lightbox({
                   duration: instant ? 0 : BACKDROP_TRANSITION_MS / 1000,
                   ease: "easeOut",
                 }}
-                className="pointer-events-none fixed z-[10001] px-2 text-center text-sm text-tertiary-foreground"
+                className="pointer-events-none fixed z-[10001] px-2 text-center text-lg text-foreground md:text-base xl:text-xl"
                 style={{
                   top: expanded.top + expanded.height + CAPTION_GAP,
                   left: expanded.left,

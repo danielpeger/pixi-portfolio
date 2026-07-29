@@ -106,6 +106,7 @@ type LightboxCaseVideoProps = CaseVideoProps & {
   ariaLabel: string;
   frameClassName?: string;
   caption?: ReactNode;
+  showCaption?: boolean;
 };
 
 export function LightboxCaseVideo({
@@ -115,6 +116,7 @@ export function LightboxCaseVideo({
   className,
   frameClassName,
   caption,
+  showCaption,
   ...videoProps
 }: LightboxCaseVideoProps) {
   const thumbRef = useRef<HTMLVideoElement>(null);
@@ -128,6 +130,7 @@ export function LightboxCaseVideo({
       className={className}
       frameClassName={cn("relative w-full overflow-hidden", frameClassName)}
       caption={caption}
+      showCaption={showCaption}
       onOpenChange={(next) => {
         if (next) setResumeAt(thumbRef.current?.currentTime ?? 0);
       }}
