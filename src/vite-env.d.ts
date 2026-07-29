@@ -14,3 +14,9 @@ declare module "*&as=picture" {
   const picture: ImagetoolsPicture;
   export default picture;
 }
+
+/** Base64 data URL from vite-imagetools `?inline`. */
+declare module "*&inline" {
+  const src: string;
+  export default src;
+}

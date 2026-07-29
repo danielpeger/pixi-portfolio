@@ -1,13 +1,17 @@
-import type { PictureImage } from "@/components/OptimizedImage";
+import { withLqip, type PictureImage } from "@/components/OptimizedImage";
 
 import overview from "@/assets/heroes/overview.png?w=640;960;1280&format=webp;jpg&as=picture";
+import overviewLqip from "@/assets/heroes/overview.png?w=64&blur=2&quality=40&format=webp&inline";
 import ratio from "@/assets/heroes/ratio.png?w=640;960;1280&format=webp;jpg&as=picture";
+import ratioLqip from "@/assets/heroes/ratio.png?w=64&blur=2&quality=40&format=webp&inline";
 import kinja from "@/assets/heroes/kinja.png?w=640;960;1280&format=webp;jpg&as=picture";
+import kinjaLqip from "@/assets/heroes/kinja.png?w=64&blur=2&quality=40&format=webp&inline";
 import ladu from "@/assets/heroes/ladu.png?w=640;960;1280&format=webp;jpg&as=picture";
+import laduLqip from "@/assets/heroes/ladu.png?w=64&blur=2&quality=40&format=webp&inline";
 
 export const caseHeroes = {
-  overview: overview as PictureImage,
-  ratio: ratio as PictureImage,
-  kinja: kinja as PictureImage,
-  ladu: ladu as PictureImage,
+  overview: withLqip(overview as PictureImage, overviewLqip),
+  ratio: withLqip(ratio as PictureImage, ratioLqip),
+  kinja: withLqip(kinja as PictureImage, kinjaLqip),
+  ladu: withLqip(ladu as PictureImage, laduLqip),
 } as const;

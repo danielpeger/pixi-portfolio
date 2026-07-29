@@ -1,5 +1,8 @@
 import { caseHeroes } from "@/assets/case-heroes";
-import { pictureSrc } from "@/components/OptimizedImage";
+import {
+  markPictureDecoded,
+  pictureSrc,
+} from "@/components/OptimizedImage";
 
 const CASE_IMAGES = [
   caseHeroes.overview,
@@ -31,8 +34,11 @@ export function prefetchCaseImages() {
     const img = new Image();
     img.decoding = "async";
     img.src = href;
-    void img.decode().catch(() => {
-      // Ignore decode failures; preload still helps the HTTP cache.
-    });
+    void img
+      .decode()
+      .then(() => markPictureDecoded(image))
+      .catch(() => {
+        // Ignore decode failures; preload still helps the HTTP cache.
+      });
   }
 }
