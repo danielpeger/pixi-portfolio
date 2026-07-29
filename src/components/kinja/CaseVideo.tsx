@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type ReactNode,
 } from "react";
 import Lightbox from "@/components/Lightbox";
 import { cn } from "@/lib/utils";
@@ -104,6 +105,7 @@ type LightboxCaseVideoProps = CaseVideoProps & {
   aspectRatio?: string;
   ariaLabel: string;
   frameClassName?: string;
+  caption?: ReactNode;
 };
 
 export function LightboxCaseVideo({
@@ -112,6 +114,7 @@ export function LightboxCaseVideo({
   ariaLabel,
   className,
   frameClassName,
+  caption,
   ...videoProps
 }: LightboxCaseVideoProps) {
   const thumbRef = useRef<HTMLVideoElement>(null);
@@ -124,6 +127,7 @@ export function LightboxCaseVideo({
       ariaLabel={ariaLabel}
       className={className}
       frameClassName={cn("relative w-full overflow-hidden", frameClassName)}
+      caption={caption}
       onOpenChange={(next) => {
         if (next) setResumeAt(thumbRef.current?.currentTime ?? 0);
       }}

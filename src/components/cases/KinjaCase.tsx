@@ -27,6 +27,7 @@ function KinjaImageLightbox({
   sizes,
   className,
   objectFit = "cover",
+  caption,
 }: {
   layoutId: string;
   image: PictureImage;
@@ -34,6 +35,7 @@ function KinjaImageLightbox({
   sizes: string;
   className?: string;
   objectFit?: "cover" | "contain";
+  caption?: ReactNode;
 }) {
   return (
     <Lightbox
@@ -42,6 +44,7 @@ function KinjaImageLightbox({
       ariaLabel={`View ${alt}`}
       className={className}
       frameClassName="h-full w-full"
+      caption={caption}
     >
       <LightboxImage
         image={image}
@@ -542,12 +545,13 @@ export default function KinjaCase({
             </p>
           </div>
 
-          <CaseFigure caption="Problem: clicking on a Muse story on the Jezebel home page makes most of the nav disappear.">
+          <CaseFigure>
             <LightboxCaseVideo
               layoutId="lightbox-kinja-problem-video"
               ariaLabel="Kinja navigation problem"
               src="/kinjanav/problem.mp4"
               loop
+              caption="Problem: clicking on a Muse story on the Jezebel home page makes most of the nav disappear."
             />
           </CaseFigure>
 
@@ -655,13 +659,14 @@ export default function KinjaCase({
                   a remote whiteboarding session. We sketched out a couple of
                   concepts and dot-voted on them.
                 </p>
-                <CaseFigure caption="Some of our initial sketches">
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-sketches"
                     image={kinjaImages.sketches1}
                     alt="Initial navigation sketches"
                     className="relative aspect-16/9 overflow-hidden rounded-[20px]"
                     sizes="(max-width: 960px) 100vw, 720px"
+                    caption="Some of our initial sketches"
                   />
                 </CaseFigure>
                 <p>
@@ -711,31 +716,40 @@ export default function KinjaCase({
                   point, so we decided to create both mobile and desktop
                   versions of each prototype.
                 </p>
-                <CaseFigure caption='"Kibbon" uses a ribbon-like network nav to visualize hierarchy. This is the prototype I worked on.'>
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-kibbon"
                     image={kinjaImages.kibbon}
                     alt="Kibbon prototype"
                     className="relative aspect-4/3 overflow-hidden rounded-[20px]"
                     sizes="(max-width: 960px) 100vw, 720px"
+                    caption={
+                      '"Kibbon" uses a ribbon-like network nav to visualize hierarchy. This is the prototype I worked on.'
+                    }
                   />
                 </CaseFigure>
-                <CaseFigure caption='"Magic cards", a concept centered around extended branding and a full-page network nav with colorful tiles.'>
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-magiccards"
                     image={kinjaImages.magiccards}
                     alt="Magic cards prototype"
                     className="relative aspect-4/3 overflow-hidden rounded-[20px]"
                     sizes="(max-width: 960px) 100vw, 720px"
+                    caption={
+                      '"Magic cards", a concept centered around extended branding and a full-page network nav with colorful tiles.'
+                    }
                   />
                 </CaseFigure>
-                <CaseFigure caption='The "ODC" prototype was based on a previous collaboration with a design agency. It treats the section nav as a tab-bar and the network nav as a slide-over menu.'>
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-odc"
                     image={kinjaImages.odc}
                     alt="ODC prototype"
                     className="relative aspect-4/3 overflow-hidden rounded-[20px]"
                     sizes="(max-width: 960px) 100vw, 720px"
+                    caption={
+                      'The "ODC" prototype was based on a previous collaboration with a design agency. It treats the section nav as a tab-bar and the network nav as a slide-over menu.'
+                    }
                   />
                 </CaseFigure>
               </div>
@@ -760,7 +774,7 @@ export default function KinjaCase({
                   scoring sheet we used to process data. Tasks were rated on a
                   3-step scale (success/mixed/fail), like this:
                 </p>
-                <CaseFigure caption="Task scoring sheet">
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-scoring"
                     image={kinjaImages.scoring}
@@ -768,6 +782,7 @@ export default function KinjaCase({
                     className="relative aspect-16/10 overflow-hidden rounded-[20px] border border-separator bg-accent-muted"
                     sizes="(max-width: 960px) 100vw, 720px"
                     objectFit="contain"
+                    caption="Task scoring sheet"
                   />
                 </CaseFigure>
                 <p>
@@ -775,13 +790,14 @@ export default function KinjaCase({
                   Mobile and desktop prototypes were shown to equal number of
                   people.
                 </p>
-                <CaseFigure caption="Screen recordings from the first round of interviews (shared with participants' consent)">
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-interviews"
                     image={kinjaImages.interviews}
                     alt="Interview screen recordings collage"
                     className="relative aspect-16/10 overflow-hidden rounded-[20px]"
                     sizes="(max-width: 960px) 100vw, 720px"
+                    caption="Screen recordings from the first round of interviews (shared with participants' consent)"
                   />
                 </CaseFigure>
               </div>
@@ -922,13 +938,14 @@ export default function KinjaCase({
                   </Highlight>
                   , and 9 understood Earther to be a section within Gizmodo.
                 </p>
-                <CaseFigure caption="The new Explore page.">
+                <CaseFigure>
                   <KinjaImageLightbox
                     layoutId="lightbox-kinja-explore"
                     image={kinjaImages.explore}
                     alt="Explore page"
                     className="relative aspect-4/3 overflow-hidden rounded-[20px]"
                     sizes="(max-width: 960px) 100vw, 720px"
+                    caption="The new Explore page."
                   />
                 </CaseFigure>
                 <p>

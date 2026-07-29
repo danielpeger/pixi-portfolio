@@ -14,6 +14,11 @@ import { cn } from "@/lib/utils";
 import { sharedLayoutTransition } from "@/lib/portfolio";
 
 const STAGE_INSET = 32;
+/** Tighter bottom inset so the stage sits closer to the viewport edge. */
+const STAGE_INSET_BOTTOM = 16;
+const CAPTION_GAP = 12;
+/** Space reserved under the image for an optional caption (gap + ~3 lines). */
+const CAPTION_RESERVE = 72;
 const BORDER_RADIUS = 20;
 const BACKDROP_TRANSITION_MS = 200;
 /** Tailwind `md` — lightbox is desktop-only below this. */
@@ -51,6 +56,8 @@ export type LightboxProps = {
   aspectRatio: string;
   ariaLabel: string;
   children: ReactNode;
+  /** Optional caption shown below the image only while the lightbox is open. */
+  caption?: ReactNode;
   className?: string;
   frameClassName?: string;
   expandedFrameClassName?: string;
@@ -67,21 +74,27 @@ function readRect(el: HTMLElement): Rect {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
-function getExpandedRect(aspectRatio: string): Rect {
+function getExpandedRect(aspectRatio: string, hasCaption: boolean): Rect {
   const { w, h } = parseAspectRatio(aspectRatio);
+  const captionSpace = hasCaption ? CAPTION_GAP + CAPTION_RESERVE : 0;
   const maxW = window.innerWidth - STAGE_INSET * 2;
-  const maxH = window.innerHeight - STAGE_INSET * 2;
+  const maxH =
+    window.innerHeight - STAGE_INSET - STAGE_INSET_BOTTOM - captionSpace;
   let width = maxW;
   let height = (width * h) / w;
   if (height > maxH) {
     height = maxH;
     width = (height * w) / h;
   }
+  const groupHeight = height + captionSpace;
   return {
     width,
     height,
     left: (window.innerWidth - width) / 2,
-    top: (window.innerHeight - height) / 2,
+    // Center the image (+ caption) group; bottom inset stays tighter than top.
+    top:
+      STAGE_INSET +
+      (window.innerHeight - STAGE_INSET - STAGE_INSET_BOTTOM - groupHeight) / 2,
   };
 }
 
@@ -90,6 +103,7 @@ export default function Lightbox({
   aspectRatio,
   ariaLabel,
   children,
+  caption,
   className,
   frameClassName,
   expandedFrameClassName,
@@ -100,6 +114,7 @@ export default function Lightbox({
   const thumbRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(false);
   const onOpenChangeRef = useRef(onOpenChange);
+  const hasCaption = Boolean(caption);
 
   const [open, setOpen] = useState(false);
   /** Portal stays mounted through the close morph. */
@@ -119,7 +134,7 @@ export default function Lightbox({
     if (!thumb) return null;
     return {
       origin: readRect(thumb),
-      expanded: getExpandedRect(aspectRatio),
+      expanded: getExpandedRect(aspectRatio, hasCaption),
     };
   }
 
@@ -173,11 +188,11 @@ export default function Lightbox({
       const thumb = thumbRef.current;
       if (!thumb) return;
       setOrigin(readRect(thumb));
-      setExpanded(getExpandedRect(aspectRatio));
+      setExpanded(getExpandedRect(aspectRatio, hasCaption));
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [active, aspectRatio]);
+  }, [active, aspectRatio, hasCaption]);
 
   const frameStyle = { borderRadius: BORDER_RADIUS } as const;
   const target = open ? expanded : origin;
@@ -197,6 +212,9 @@ export default function Lightbox({
         >
           {children}
         </div>
+        {hasCaption ? (
+          <div className="mt-3 text-sm text-tertiary-foreground">{caption}</div>
+        ) : null}
       </div>
     );
   }
@@ -280,6 +298,26 @@ export default function Lightbox({
                 {children}
               </div>
             </motion.div>
+
+            {hasCaption ? (
+              <motion.div
+                key={`${layoutId}-caption`}
+                initial={instant ? false : { opacity: 0 }}
+                animate={{ opacity: open ? 1 : 0 }}
+                transition={{
+                  duration: instant ? 0 : BACKDROP_TRANSITION_MS / 1000,
+                  ease: "easeOut",
+                }}
+                className="pointer-events-none fixed z-[10001] px-2 text-center text-sm text-tertiary-foreground"
+                style={{
+                  top: expanded.top + expanded.height + CAPTION_GAP,
+                  left: expanded.left,
+                  width: expanded.width,
+                }}
+              >
+                {caption}
+              </motion.div>
+            ) : null}
           </>,
           document.body,
         )}
