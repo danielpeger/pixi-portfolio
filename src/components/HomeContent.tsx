@@ -187,7 +187,8 @@ export default function HomeContent({
             view="overview"
             className={cn(
               "block max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0",
-              elevateLayoutId === CASE_LAYOUT_IDS.overview && "relative z-[9999]",
+              elevateLayoutId === CASE_LAYOUT_IDS.overview &&
+                "relative z-[9999]",
             )}
           >
             <SharedCaseImage
@@ -199,7 +200,7 @@ export default function HomeContent({
               className={`w-full aspect-5/4 mb-2 ${
                 iconsOn
                   ? "border border-gray-200 bg-gray-50"
-                  : "border border-yellow-200 bg-accent-muted"
+                  : "border border-accent-border bg-accent-muted"
               }`}
               sizes={CASE_HERO_SIZES}
             />
@@ -227,7 +228,7 @@ export default function HomeContent({
             className={`w-full aspect-5/4 mb-2 ${
               iconsOn
                 ? "border bg-gray-50"
-                : "border border-yellow-200 bg-accent-muted"
+                : "border border-accent-border bg-accent-muted"
             }`}
             sizes={CASE_HERO_SIZES}
           />
@@ -255,7 +256,7 @@ export default function HomeContent({
               className={`w-full aspect-5/4 mb-2 ${
                 iconsOn
                   ? "border border-gray-200 bg-gray-50"
-                  : "border border-yellow-200 bg-accent-muted"
+                  : "border border-accent-border bg-accent-muted"
               }`}
               sizes={CASE_HERO_SIZES}
             />
@@ -285,7 +286,7 @@ export default function HomeContent({
             className={`w-full aspect-5/4 mb-2 ${
               iconsOn
                 ? "border bg-gray-50"
-                : "border border-yellow-200 bg-accent-muted"
+                : "border border-accent-border bg-accent-muted"
             }`}
             sizes={CASE_HERO_SIZES}
           />
