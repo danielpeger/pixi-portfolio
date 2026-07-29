@@ -16,6 +16,7 @@ type OptimizedImageProps = {
   className?: string;
   sizes?: string;
   loading?: "lazy" | "eager";
+  decoding?: "async" | "sync" | "auto";
   draggable?: boolean;
   /** Absolute fill inside a `relative` parent. */
   fill?: boolean;
@@ -27,6 +28,7 @@ export default function OptimizedImage({
   className,
   sizes,
   loading = "lazy",
+  decoding = "async",
   draggable,
   fill = false,
 }: OptimizedImageProps) {
@@ -50,7 +52,7 @@ export default function OptimizedImage({
         className={cn(fill && "absolute inset-0 h-full w-full", className)}
         sizes={sizes}
         loading={loading}
-        decoding="async"
+        decoding={decoding}
         draggable={draggable}
       />
     </picture>

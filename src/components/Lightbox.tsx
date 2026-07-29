@@ -139,6 +139,11 @@ export default function Lightbox({
   const [active, setActive] = useState(false);
   const [origin, setOrigin] = useState<Rect | null>(null);
   const [expanded, setExpanded] = useState<Rect | null>(null);
+  /**
+   * Hide the thumb only after the portal stage has painted over it. Hiding in
+   * the same commit as mount flashes blank while the stage image decodes.
+   */
+  const [hideThumb, setHideThumb] = useState(false);
 
   openRef.current = open;
   onOpenChangeRef.current = onOpenChange;
@@ -171,6 +176,7 @@ export default function Lightbox({
         setExpanded(m.expanded);
       }
       setOpen(false);
+      setHideThumb(false);
     }
     onOpenChange?.(next);
   }
@@ -196,6 +202,7 @@ export default function Lightbox({
       onOpenChangeRef.current?.(false);
     }
     setActive(false);
+    setHideThumb(false);
     setOrigin(null);
     setExpanded(null);
   }, [mdUp]);
@@ -211,6 +218,22 @@ export default function Lightbox({
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [active, aspectRatio, hasCaption]);
+
+  useEffect(() => {
+    if (!active || !open) {
+      setHideThumb(false);
+      return;
+    }
+    // Wait two frames so the stage is composited over the thumb first.
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setHideThumb(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [active, open]);
 
   const frameStyle = { borderRadius: BORDER_RADIUS } as const;
   const target = open ? expanded : origin;
@@ -255,16 +278,14 @@ export default function Lightbox({
             className={cn(
               "relative select-none",
               frameClassName,
-              // Stay invisible only while open. On close, reveal immediately so
-              // the mounted thumb is waiting under the morphing stage (no remount flash).
-              active && open && "invisible pointer-events-none",
+              hideThumb && "invisible pointer-events-none",
             )}
             style={{
               ...frameStyle,
               aspectRatio: aspectRatio.replace(/\s+/g, " "),
               width: "100%",
             }}
-            aria-hidden={(active && open) || undefined}
+            aria-hidden={hideThumb || undefined}
           >
             {/* Keep children mounted while open so close doesn't remount/flash. */}
             {children}
@@ -409,6 +430,7 @@ export function LightboxImage({
         )}
         sizes={sizes}
         loading={priority ? "eager" : "lazy"}
+        decoding="sync"
         draggable={false}
       />
     </div>
