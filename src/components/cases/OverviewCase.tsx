@@ -5,12 +5,10 @@ import SharedCaseImage from "@/components/SharedCaseImage";
 import { CASE_HERO_SIZES, CASE_LAYOUT_IDS } from "@/lib/portfolio";
 
 type OverviewCaseProps = {
-  iconsOn?: boolean;
   onHeroLayoutComplete?: () => void;
 };
 
 export default function OverviewCase({
-  iconsOn = false,
   onHeroLayoutComplete,
 }: OverviewCaseProps) {
   return (
@@ -20,11 +18,7 @@ export default function OverviewCase({
         layoutId={CASE_LAYOUT_IDS.overview}
         image={caseHeroes.overview}
         alt="Overview"
-        className={`w-full aspect-5/4 mb-8 ${
-          iconsOn
-            ? "border border-gray-200 bg-gray-50"
-            : "border border-accent-border bg-accent-muted"
-        }`}
+        className="w-full aspect-5/4 mb-8 border border-accent-border bg-accent-muted"
         sizes={CASE_HERO_SIZES}
         priority
         onLayoutAnimationComplete={onHeroLayoutComplete}

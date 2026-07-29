@@ -9,8 +9,8 @@ type ViewLinkProps = {
 
 /** In-app navigation that keeps Motion layoutId in the same React tree. */
 export default function ViewLink({ view, className, children }: ViewLinkProps) {
-  const { navigate, iconsOn } = usePortfolio();
-  const href = iconsOn ? `${pathForView(view)}?icons=on` : pathForView(view);
+  const { navigate } = usePortfolio();
+  const href = pathForView(view);
 
   return (
     <a

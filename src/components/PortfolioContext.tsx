@@ -3,7 +3,6 @@ import type { PortfolioView } from "@/lib/portfolio";
 
 export type PortfolioContextValue = {
   view: PortfolioView;
-  iconsOn: boolean;
   navigate: (view: PortfolioView) => void;
   back: () => void;
 };

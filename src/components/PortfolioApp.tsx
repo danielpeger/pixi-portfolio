@@ -12,7 +12,6 @@ import RatioCase from "@/components/cases/RatioCase";
 import KinjaCase from "@/components/cases/KinjaCase";
 import LaduCase from "@/components/cases/LaduCase";
 import { PortfolioContext } from "@/components/PortfolioContext";
-import { isIconsOn } from "@/lib/features";
 import { prefetchCaseImages } from "@/lib/prefetchCaseImages";
 import {
   isCaseView,
@@ -61,9 +60,6 @@ export default function PortfolioApp() {
    */
   const [elevateLayoutId, setElevateLayoutId] = useState<CaseLayoutId | null>(
     null,
-  );
-  const [iconsOn, setIconsOn] = useState(() =>
-    isIconsOn(new URLSearchParams(window.location.search)),
   );
 
   const currentView = useRef(view);
@@ -118,7 +114,6 @@ export default function PortfolioApp() {
       const next = viewFromPath(window.location.pathname);
       if (next === "home") beginCloseElevate(currentView.current);
       isBackRef.current = true;
-      setIconsOn(isIconsOn(new URLSearchParams(window.location.search)));
       setView(next);
     };
     window.addEventListener("popstate", onPopState);
@@ -185,17 +180,6 @@ export default function PortfolioApp() {
     isBackRef.current = false;
   }, [view, keepHome]);
 
-  const hrefFor = useCallback(
-    (next: PortfolioView) => {
-      const path = pathForView(next);
-      if (!iconsOn) return path;
-      const params = new URLSearchParams();
-      params.set("icons", "on");
-      return `${path}?${params.toString()}`;
-    },
-    [iconsOn],
-  );
-
   const navigate = useCallback(
     (next: PortfolioView) => {
       if (next === currentView.current) return;
@@ -209,10 +193,10 @@ export default function PortfolioApp() {
       } else if (next === "home") {
         beginCloseElevate(currentView.current);
       }
-      window.history.pushState({ view: next }, "", hrefFor(next));
+      window.history.pushState({ view: next }, "", pathForView(next));
       setView(next);
     },
-    [beginCloseElevate, hrefFor],
+    [beginCloseElevate],
   );
 
   const back = useCallback(() => {
@@ -236,7 +220,7 @@ export default function PortfolioApp() {
   const homeShareLayout = isHome || morphingOpen;
 
   return (
-    <PortfolioContext.Provider value={{ view, iconsOn, navigate, back }}>
+    <PortfolioContext.Provider value={{ view, navigate, back }}>
       <LayoutGroup id="portfolio">
         {keepHome && (
           <div
@@ -256,7 +240,6 @@ export default function PortfolioApp() {
             <HomeContent
               active={isHome}
               shareLayout={homeShareLayout}
-              iconsOn={iconsOn}
               elevateLayoutId={elevateLayoutId}
               onLayoutAnimationComplete={
                 elevateLayoutId ? onHomeLayoutComplete : undefined
@@ -277,28 +260,16 @@ export default function PortfolioApp() {
             }
           >
             {view === "overview" && (
-              <OverviewCase
-                iconsOn={iconsOn}
-                onHeroLayoutComplete={onHeroLayoutComplete}
-              />
+              <OverviewCase onHeroLayoutComplete={onHeroLayoutComplete} />
             )}
             {view === "ratio" && (
-              <RatioCase
-                iconsOn={iconsOn}
-                onHeroLayoutComplete={onHeroLayoutComplete}
-              />
+              <RatioCase onHeroLayoutComplete={onHeroLayoutComplete} />
             )}
             {view === "kinja" && (
-              <KinjaCase
-                iconsOn={iconsOn}
-                onHeroLayoutComplete={onHeroLayoutComplete}
-              />
+              <KinjaCase onHeroLayoutComplete={onHeroLayoutComplete} />
             )}
             {view === "ladu" && (
-              <LaduCase
-                iconsOn={iconsOn}
-                onHeroLayoutComplete={onHeroLayoutComplete}
-              />
+              <LaduCase onHeroLayoutComplete={onHeroLayoutComplete} />
             )}
           </div>
         )}
