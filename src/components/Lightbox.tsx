@@ -256,8 +256,16 @@ export default function Lightbox({
             {!active ? children : null}
           </div>
         </div>
-        {showClosedCaption && !active ? (
-          <div className="mt-3 text-sm text-tertiary-foreground">{caption}</div>
+        {showClosedCaption ? (
+          <div
+            className={cn(
+              "mt-3 text-sm text-tertiary-foreground",
+              active && "invisible",
+            )}
+            aria-hidden={active || undefined}
+          >
+            {caption}
+          </div>
         ) : null}
       </div>
 
