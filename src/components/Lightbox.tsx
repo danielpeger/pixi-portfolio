@@ -260,9 +260,11 @@ export default function Lightbox({
           <div
             className={cn(
               "mt-3 text-sm text-tertiary-foreground",
-              active && "invisible",
+              // Hide only while fully open — restore as soon as close starts so
+              // the caption doesn't vanish for the whole morph duration.
+              open && "invisible",
             )}
-            aria-hidden={active || undefined}
+            aria-hidden={open || undefined}
           >
             {caption}
           </div>
