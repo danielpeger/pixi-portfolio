@@ -50,7 +50,10 @@ export default function SharedCaseImage({
       layoutId={enabled ? layoutId : undefined}
       layoutCrossfade={false}
       transition={sharedLayoutTransition}
-      className={cn("relative", className)}
+      className={cn(
+        "relative border border-accent-border-light bg-accent-muted-light",
+        className,
+      )}
       style={{
         borderRadius: 20,
         // Inline z-index so it wins over equal-z siblings and Pixi layers

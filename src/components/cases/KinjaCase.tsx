@@ -344,7 +344,7 @@ export default function KinjaCase({
         layoutId={CASE_LAYOUT_IDS.kinja}
         image={caseHeroes.kinja}
         alt="Kinja"
-        className="w-full aspect-5/4 mb-8 border border-accent-border bg-accent-muted"
+        className="w-full aspect-5/4 mb-8"
         sizes={CASE_HERO_SIZES}
         priority
         onLayoutAnimationComplete={onHeroLayoutComplete}
@@ -710,7 +710,7 @@ export default function KinjaCase({
                   3-step scale (success/mixed/fail), like this:
                 </p>
                 <CaseFigure caption="Task scoring sheet">
-                  <div className="relative aspect-16/10 overflow-hidden rounded-[20px] border border-separator bg-accent-muted">
+                  <div className="relative aspect-16/10 overflow-hidden rounded-[20px] border border-accent-border-light bg-accent-muted-light">
                     <OptimizedImage
                       image={kinjaImages.scoring}
                       alt="Task scoring sheet"

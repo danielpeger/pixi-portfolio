@@ -18,7 +18,7 @@ export default function PreflightCase({
         layoutId={CASE_LAYOUT_IDS.preflight}
         image={caseHeroes.preflight}
         alt="Preflight"
-        className="w-full aspect-5/4 mb-8 border border-accent-border bg-accent-muted"
+        className="w-full aspect-5/4 mb-8"
         sizes={CASE_HERO_SIZES}
         priority
         onLayoutAnimationComplete={onHeroLayoutComplete}

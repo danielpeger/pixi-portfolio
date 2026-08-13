@@ -105,7 +105,7 @@ export default function HomeContent({
               {...elevateProps(CASE_LAYOUT_IDS.overview)}
               image={caseHeroes.overview}
               alt="Overview"
-              className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
+              className="w-full aspect-5/4 mb-2"
               sizes={CASE_HERO_SIZES}
             />
             <p>
@@ -129,7 +129,7 @@ export default function HomeContent({
             {...elevateProps(CASE_LAYOUT_IDS.ratio)}
             image={caseHeroes.ratio}
             alt="Ratio"
-            className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
+            className="w-full aspect-5/4 mb-2"
             sizes={CASE_HERO_SIZES}
           />
           <p>
@@ -153,7 +153,7 @@ export default function HomeContent({
               {...elevateProps(CASE_LAYOUT_IDS.kinja)}
               image={caseHeroes.kinja}
               alt="Kinja"
-              className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
+              className="w-full aspect-5/4 mb-2"
               sizes={CASE_HERO_SIZES}
             />
             <p>
@@ -170,7 +170,8 @@ export default function HomeContent({
           view="preflight"
           className={cn(
             "block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16",
-            elevateLayoutId === CASE_LAYOUT_IDS.preflight && "relative z-[9999]",
+            elevateLayoutId === CASE_LAYOUT_IDS.preflight &&
+              "relative z-[9999]",
           )}
         >
           <SharedCaseImage
@@ -179,12 +180,12 @@ export default function HomeContent({
             {...elevateProps(CASE_LAYOUT_IDS.preflight)}
             image={caseHeroes.preflight}
             alt="Preflight"
-            className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
+            className="w-full aspect-5/4 mb-2"
             sizes={CASE_HERO_SIZES}
           />
           <p>
-            Preflight — project card placeholder. Swap this blurb for the
-            real summary when the case study is ready.
+            Preflight — project card placeholder. Swap this blurb for the real
+            summary when the case study is ready.
           </p>
         </ViewLink>
       </section>
@@ -194,8 +195,7 @@ export default function HomeContent({
             view="ladu"
             className={cn(
               "block max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0",
-              elevateLayoutId === CASE_LAYOUT_IDS.ladu &&
-                "relative z-[9999]",
+              elevateLayoutId === CASE_LAYOUT_IDS.ladu && "relative z-[9999]",
             )}
           >
             <SharedCaseImage
@@ -204,7 +204,7 @@ export default function HomeContent({
               {...elevateProps(CASE_LAYOUT_IDS.ladu)}
               image={caseHeroes.ladu}
               alt="Ladu"
-              className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
+              className="w-full aspect-5/4 mb-2"
               sizes={CASE_HERO_SIZES}
             />
             <p>

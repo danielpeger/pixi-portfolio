@@ -18,7 +18,7 @@ export default function OverviewCase({
         layoutId={CASE_LAYOUT_IDS.overview}
         image={caseHeroes.overview}
         alt="Overview"
-        className="w-full aspect-5/4 mb-8 border border-accent-border bg-accent-muted"
+        className="w-full aspect-5/4 mb-8"
         sizes={CASE_HERO_SIZES}
         priority
         onLayoutAnimationComplete={onHeroLayoutComplete}

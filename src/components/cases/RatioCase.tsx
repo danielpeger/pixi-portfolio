@@ -18,7 +18,7 @@ export default function RatioCase({
         layoutId={CASE_LAYOUT_IDS.ratio}
         image={caseHeroes.ratio}
         alt="Ratio"
-        className="w-full aspect-5/4 mb-8 border border-accent-border bg-accent-muted"
+        className="w-full aspect-5/4 mb-8"
         sizes={CASE_HERO_SIZES}
         priority
         onLayoutAnimationComplete={onHeroLayoutComplete}
