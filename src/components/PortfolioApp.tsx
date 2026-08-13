@@ -11,6 +11,7 @@ import OverviewCase from "@/components/cases/OverviewCase";
 import RatioCase from "@/components/cases/RatioCase";
 import KinjaCase from "@/components/cases/KinjaCase";
 import LaduCase from "@/components/cases/LaduCase";
+import PreflightCase from "@/components/cases/PreflightCase";
 import { PortfolioContext } from "@/components/PortfolioContext";
 import { prefetchCaseImages } from "@/lib/prefetchCaseImages";
 import {
@@ -28,6 +29,7 @@ const VIEW_TITLES: Record<PortfolioView, string> = {
   ratio: "Ratio — Daniel Péger",
   kinja: "Kinja — Daniel Péger",
   ladu: "Ladu — Daniel Péger",
+  preflight: "Preflight — Daniel Péger",
 };
 
 /** Fallback if layout animation complete never fires. */
@@ -270,6 +272,9 @@ export default function PortfolioApp() {
             )}
             {view === "ladu" && (
               <LaduCase onHeroLayoutComplete={onHeroLayoutComplete} />
+            )}
+            {view === "preflight" && (
+              <PreflightCase onHeroLayoutComplete={onHeroLayoutComplete} />
             )}
           </div>
         )}

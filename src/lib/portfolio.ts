@@ -3,6 +3,7 @@ export const CASE_LAYOUT_IDS = {
   ratio: "ratio-image",
   kinja: "kinja-image",
   ladu: "ladu-image",
+  preflight: "preflight-image",
 } as const;
 
 export type CaseLayoutId =
@@ -13,7 +14,8 @@ export type PortfolioView =
   | "overview"
   | "ratio"
   | "kinja"
-  | "ladu";
+  | "ladu"
+  | "preflight";
 
 export type CaseView = Exclude<PortfolioView, "home">;
 
@@ -22,6 +24,7 @@ export const LAYOUT_ID_BY_CASE: Record<CaseView, CaseLayoutId> = {
   ratio: CASE_LAYOUT_IDS.ratio,
   kinja: CASE_LAYOUT_IDS.kinja,
   ladu: CASE_LAYOUT_IDS.ladu,
+  preflight: CASE_LAYOUT_IDS.preflight,
 };
 
 export const sharedLayoutTransition = {
@@ -45,6 +48,7 @@ export function viewFromPath(pathname: string): PortfolioView {
   if (pathname.startsWith("/ratio")) return "ratio";
   if (pathname.startsWith("/kinja")) return "kinja";
   if (pathname.startsWith("/ladu")) return "ladu";
+  if (pathname.startsWith("/preflight")) return "preflight";
   return "home";
 }
 

@@ -9,6 +9,7 @@ const CASE_IMAGES = [
   caseHeroes.ratio,
   caseHeroes.kinja,
   caseHeroes.ladu,
+  caseHeroes.preflight,
 ] as const;
 
 let started = false;

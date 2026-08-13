@@ -1,4 +1,5 @@
 import { caseHeroes } from "@/assets/case-heroes";
+import AudioPlayer from "@/components/AudioPlayer";
 import PixiSketch from "@/components/PixiSketch";
 import SharedCaseImage from "@/components/SharedCaseImage";
 import ViewLink from "@/components/ViewLink";
@@ -166,26 +167,58 @@ export default function HomeContent({
       </section>
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <ViewLink
-          view="ladu"
+          view="preflight"
           className={cn(
             "block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16",
-            elevateLayoutId === CASE_LAYOUT_IDS.ladu && "relative z-[9999]",
+            elevateLayoutId === CASE_LAYOUT_IDS.preflight && "relative z-[9999]",
           )}
         >
           <SharedCaseImage
-            layoutId={CASE_LAYOUT_IDS.ladu}
+            layoutId={CASE_LAYOUT_IDS.preflight}
             shareLayout={shareLayout}
-            {...elevateProps(CASE_LAYOUT_IDS.ladu)}
-            image={caseHeroes.ladu}
-            alt="Ladu"
+            {...elevateProps(CASE_LAYOUT_IDS.preflight)}
+            image={caseHeroes.preflight}
+            alt="Preflight"
             className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
             sizes={CASE_HERO_SIZES}
           />
           <p>
-            Ladu — project card placeholder. Swap this blurb for the real
-            summary when the case study is ready.
+            Preflight — project card placeholder. Swap this blurb for the
+            real summary when the case study is ready.
           </p>
         </ViewLink>
+      </section>
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+          <ViewLink
+            view="ladu"
+            className={cn(
+              "block max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0",
+              elevateLayoutId === CASE_LAYOUT_IDS.ladu &&
+                "relative z-[9999]",
+            )}
+          >
+            <SharedCaseImage
+              layoutId={CASE_LAYOUT_IDS.ladu}
+              shareLayout={shareLayout}
+              {...elevateProps(CASE_LAYOUT_IDS.ladu)}
+              image={caseHeroes.ladu}
+              alt="Ladu"
+              className="w-full aspect-5/4 mb-2 border border-accent-border bg-accent-muted"
+              sizes={CASE_HERO_SIZES}
+            />
+            <p>
+              Ladu — project card placeholder. Swap this blurb for the real
+              summary when the case study is ready.
+            </p>
+          </ViewLink>
+        </div>
+      </section>
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+          <h3 className="pb-4 text-xl xl:text-2xl">On repeat</h3>
+          <AudioPlayer />
+        </div>
       </section>
     </main>
   );
