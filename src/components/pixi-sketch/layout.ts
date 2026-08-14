@@ -50,9 +50,10 @@ const TEXT_SPACING_REFERENCE_HEIGHT = 600;
 const TEXT_SPACING_STRENGTH = 0.3;
 // Anchor around the block's vertical center so it holds position while it tightens.
 const TEXT_SPACING_ANCHOR = 0.75;
-// Keep mobile X at 1 so Hello/I'm stay on the left edge and friend/Dani
-// on the right, matching the original horizontal reach.
-const MOBILE_X_TIGHTNESS = 1;
+// Mobile: 9px from the canvas (or 612px column) edges.
+const MOBILE_SIDE_INSET = 9;
+// Original I'm sits 0.07 of canvas width to the right of Hello.
+const IM_X_FROM_HELLO = 0.07;
 
 const LINE_Y = {
   hello: 0.66,
@@ -61,13 +62,12 @@ const LINE_Y = {
   dani: 0.94,
 } as const;
 
-// Mobile Y: looser than the mid cluster, tighter than the original
-// (0.68 / 0.78 / 0.90 / 0.96 after the +0.02 shift).
+// Mobile Y: same internal gaps as the last pass, shifted a little lower.
 const MOBILE_LINE_Y = {
-  hello: 0.71,
-  friend: 0.8,
-  im: 0.9,
-  dani: 0.96,
+  hello: 0.735,
+  friend: 0.825,
+  im: 0.925,
+  dani: 0.985,
 } as const;
 
 export type TextLayoutMetrics = {
@@ -89,29 +89,15 @@ function computeTextSpacingScale(canvasHeight: number) {
   return 1 - TEXT_SPACING_STRENGTH + constant * TEXT_SPACING_STRENGTH;
 }
 
-function computeAxisScale(
-  canvasHeight: number,
-  viewportWidth: number,
-  tightness: number,
-) {
-  const heightScale = computeTextSpacingScale(canvasHeight);
-  return isMobileViewport(viewportWidth) ? heightScale * tightness : heightScale;
-}
-
 // Apply the same height-based factor horizontally: as the canvas gets taller,
 // pull each x toward the canvas center so the columns tighten up.
 function computeTextXProximity(
   x: number,
   canvasWidth: number,
   canvasHeight: number,
-  viewportWidth: number,
 ) {
   const center = canvasWidth / 2;
-  return (
-    center +
-    (x - center) *
-      computeAxisScale(canvasHeight, viewportWidth, MOBILE_X_TIGHTNESS)
-  );
+  return center + (x - center) * computeTextSpacingScale(canvasHeight);
 }
 
 function computeLineY(
@@ -135,34 +121,40 @@ function lineYBase(
 }
 
 export function computeHelloX(m: TextLayoutMetrics) {
+  if (isMobileViewport(m.viewportWidth)) {
+    return MOBILE_SIDE_INSET + computeLeftOffset(m.viewportWidth);
+  }
   return computeTextXProximity(
     m.canvasWidth * 0.05 + computeLeftOffset(m.viewportWidth),
     m.canvasWidth,
     m.canvasHeight,
-    m.viewportWidth,
   );
 }
 
 export function computeFriendX(m: TextLayoutMetrics) {
-  const x =
-    m.canvasWidth * 0.94 -
-    m.fontSize * 3 -
-    computeRightOffset(m.viewportWidth);
+  const right = computeRightOffset(m.viewportWidth);
+  if (isMobileViewport(m.viewportWidth)) {
+    return m.canvasWidth - m.fontSize * 3 - right - MOBILE_SIDE_INSET;
+  }
   return computeTextXProximity(
-    x,
+    m.canvasWidth * 0.94 - m.fontSize * 3 - right,
     m.canvasWidth,
     m.canvasHeight,
-    m.viewportWidth,
   );
 }
 
 export function computeImX(m: TextLayoutMetrics) {
-  const x = m.canvasWidth * 0.12 + computeLeftOffset(m.viewportWidth);
+  if (isMobileViewport(m.viewportWidth)) {
+    return (
+      MOBILE_SIDE_INSET +
+      m.canvasWidth * IM_X_FROM_HELLO +
+      computeLeftOffset(m.viewportWidth)
+    );
+  }
   return computeTextXProximity(
-    x,
+    m.canvasWidth * 0.12 + computeLeftOffset(m.viewportWidth),
     m.canvasWidth,
     m.canvasHeight,
-    m.viewportWidth,
   );
 }
 
@@ -171,12 +163,10 @@ export function computeDaniX(m: TextLayoutMetrics) {
     m.canvasWidth -
     m.fontSize * 2.3 -
     computeRightOffset(m.viewportWidth);
-  return computeTextXProximity(
-    x,
-    m.canvasWidth,
-    m.canvasHeight,
-    m.viewportWidth,
-  );
+  if (isMobileViewport(m.viewportWidth)) {
+    return x - MOBILE_SIDE_INSET;
+  }
+  return computeTextXProximity(x, m.canvasWidth, m.canvasHeight);
 }
 
 export const computeHelloY = (m: TextLayoutMetrics) =>
