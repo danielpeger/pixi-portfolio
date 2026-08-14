@@ -1,5 +1,6 @@
 import { caseHeroes } from "@/assets/case-heroes";
 import AudioPlayer from "@/components/AudioPlayer";
+import Bookmarks from "@/components/Bookmarks";
 import PixiSketch from "@/components/PixiSketch";
 import SharedCaseImage from "@/components/SharedCaseImage";
 import ViewLink from "@/components/ViewLink";
@@ -218,6 +219,12 @@ export default function HomeContent({
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
           <h3 className="pb-4 text-xl xl:text-2xl">On repeat</h3>
           <AudioPlayer />
+        </div>
+      </section>
+      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
+          <h3 className="pb-4 text-xl xl:text-2xl">Bookmarks</h3>
+          <Bookmarks />
         </div>
       </section>
     </main>
