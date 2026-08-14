@@ -50,9 +50,8 @@ const TEXT_SPACING_REFERENCE_HEIGHT = 600;
 const TEXT_SPACING_STRENGTH = 0.3;
 // Anchor around the block's vertical center so it holds position while it tightens.
 const TEXT_SPACING_ANCHOR = 0.75;
-// Extra cluster tightness below md. 1 = same as the desktop layout.
-const MOBILE_Y_TIGHTNESS = 0.72;
-const MOBILE_X_TIGHTNESS = 0.86;
+// Extra horizontal cluster tightness below md. 1 = same as desktop.
+const MOBILE_X_TIGHTNESS = 0.62;
 
 const LINE_Y = {
   hello: 0.66,
@@ -61,14 +60,13 @@ const LINE_Y = {
   dani: 0.94,
 } as const;
 
-// Mobile: words sit closer, and the Hello/friend and I'm/Dani pairs
-// have less space between them than on desktop. Values already include
-// the +0.02 downward shift that mobile used to apply uniformly.
+// Mobile: a tighter, lower cluster so the four words sit closer to
+// each other and to the content below the canvas.
 const MOBILE_LINE_Y = {
-  hello: 0.72,
-  friend: 0.8,
-  im: 0.87,
-  dani: 0.93,
+  hello: 0.81,
+  friend: 0.86,
+  im: 0.91,
+  dani: 0.96,
 } as const;
 
 export type TextLayoutMetrics = {
@@ -120,15 +118,10 @@ function computeLineY(
   base: number,
 ) {
   const anchor = computeAnchor(viewportWidth);
-  const multiplier = base;
-  const scale = computeAxisScale(
-    canvasHeight,
-    viewportWidth,
-    MOBILE_Y_TIGHTNESS,
-  );
+  const scale = computeTextSpacingScale(canvasHeight);
   return (
     canvasHeight * anchor +
-    (multiplier - anchor) * canvasHeight * scale -
+    (base - anchor) * canvasHeight * scale -
     fontSize
   );
 }
