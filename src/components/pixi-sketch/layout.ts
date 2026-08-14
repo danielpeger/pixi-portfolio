@@ -62,10 +62,10 @@ const LINE_Y = {
 
 // Mobile Y: a touch looser, shifted up, with extra space under Hello.
 const MOBILE_LINE_Y = {
-  hello: 0.705,
-  friend: 0.815,
-  im: 0.92,
-  dani: 0.98,
+  hello: 0.695,
+  friend: 0.805,
+  im: 0.91,
+  dani: 0.97,
 } as const;
 
 export type TextLayoutMetrics = {
