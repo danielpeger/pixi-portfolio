@@ -43,7 +43,7 @@ export default function HomeContent({
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <PixiSketch
           active={active}
-          className="h-[88svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
+          className="h-[92svh] md:h-[min(92svh,800px)] xl:h-[min(92svh,960px)]"
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
