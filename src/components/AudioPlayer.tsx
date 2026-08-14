@@ -48,7 +48,7 @@ const TRACKS: Track[] = [
     id: "blue-sky",
     title: "Blue Sky",
     artist: "The Allman Brothers Band",
-    album: "Universal Masters Collection",
+    album: "Eat a Peach",
     src: "/Blue Sky - The Allman Brothers Band.m4a",
     artwork: "/artwork/blue-sky.jpg",
   },
