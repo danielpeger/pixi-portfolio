@@ -134,7 +134,8 @@ export function computeHelloX(m: TextLayoutMetrics) {
 export function computeFriendX(m: TextLayoutMetrics) {
   const right = computeRightOffset(m.viewportWidth);
   if (isMobileViewport(m.viewportWidth)) {
-    return m.canvasWidth - m.fontSize * 3 - right - MOBILE_SIDE_INSET;
+    // 2.73em matches the Jua "friend," advance so the glyph sits ~9px in.
+    return m.canvasWidth - m.fontSize * 2.73 - right - MOBILE_SIDE_INSET;
   }
   return computeTextXProximity(
     m.canvasWidth * 0.94 - m.fontSize * 3 - right,
@@ -159,14 +160,16 @@ export function computeImX(m: TextLayoutMetrics) {
 }
 
 export function computeDaniX(m: TextLayoutMetrics) {
-  const x =
-    m.canvasWidth -
-    m.fontSize * 2.3 -
-    computeRightOffset(m.viewportWidth);
+  const right = computeRightOffset(m.viewportWidth);
   if (isMobileViewport(m.viewportWidth)) {
-    return x - MOBILE_SIDE_INSET;
+    // 2.08em matches the Jua "Dani" advance so the glyph sits ~9px in.
+    return m.canvasWidth - m.fontSize * 2.08 - right - MOBILE_SIDE_INSET;
   }
-  return computeTextXProximity(x, m.canvasWidth, m.canvasHeight);
+  return computeTextXProximity(
+    m.canvasWidth - m.fontSize * 2.3 - right,
+    m.canvasWidth,
+    m.canvasHeight,
+  );
 }
 
 export const computeHelloY = (m: TextLayoutMetrics) =>
