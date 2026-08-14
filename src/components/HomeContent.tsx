@@ -47,7 +47,7 @@ export default function HomeContent({
         />
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-16">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-12 md:mb-16">
           <p>
             A design engineer who puts the <em>soft</em> in software. <br />{" "}
             I've been in design since 2016, and I'm currently pursuing a
@@ -56,7 +56,7 @@ export default function HomeContent({
         </div>
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
           <h3 className="pb-4 text-xl xl:text-2xl">Places I've worked at</h3>
           <ul>
             <li className="pb-2 mb-2 border-b border-separator flex justify-between">
@@ -87,7 +87,7 @@ export default function HomeContent({
         </div>
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
           <h3 className="pb-4 text-xl xl:text-2xl">
             Projects I'm most proud of
           </h3>
@@ -119,7 +119,7 @@ export default function HomeContent({
         <ViewLink
           view="ratio"
           className={cn(
-            "block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16",
+            "block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-12 md:mb-16",
             elevateLayoutId === CASE_LAYOUT_IDS.ratio && "relative z-[9999]",
           )}
         >
@@ -139,7 +139,7 @@ export default function HomeContent({
         </ViewLink>
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
           <ViewLink
             view="kinja"
             className={cn(
@@ -169,7 +169,7 @@ export default function HomeContent({
         <ViewLink
           view="preflight"
           className={cn(
-            "block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-16",
+            "block px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-12 md:mb-16",
             elevateLayoutId === CASE_LAYOUT_IDS.preflight &&
               "relative z-[9999]",
           )}
@@ -190,7 +190,7 @@ export default function HomeContent({
         </ViewLink>
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
           <ViewLink
             view="ladu"
             className={cn(
@@ -215,7 +215,7 @@ export default function HomeContent({
         </div>
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-16">
+        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
           <h3 className="pb-4 text-xl xl:text-2xl">On repeat</h3>
           <AudioPlayer />
         </div>
