@@ -51,7 +51,7 @@ const TEXT_SPACING_STRENGTH = 0.3;
 // Anchor around the block's vertical center so it holds position while it tightens.
 const TEXT_SPACING_ANCHOR = 0.75;
 // Extra horizontal cluster tightness below md. 1 = same as desktop.
-const MOBILE_X_TIGHTNESS = 0.62;
+const MOBILE_X_TIGHTNESS = 0.81;
 
 const LINE_Y = {
   hello: 0.66,
@@ -60,12 +60,11 @@ const LINE_Y = {
   dani: 0.94,
 } as const;
 
-// Mobile: a tighter, lower cluster so the four words sit closer to
-// each other and to the content below the canvas.
+// Mobile: halfway between the original spread and the tighter cluster.
 const MOBILE_LINE_Y = {
-  hello: 0.81,
-  friend: 0.86,
-  im: 0.91,
+  hello: 0.745,
+  friend: 0.82,
+  im: 0.905,
   dani: 0.96,
 } as const;
 
