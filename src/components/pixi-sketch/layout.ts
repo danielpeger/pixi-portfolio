@@ -60,12 +60,12 @@ const LINE_Y = {
   dani: 0.94,
 } as const;
 
-// Mobile Y: same internal gaps as the last pass, shifted a little lower.
+// Mobile Y: a touch looser, shifted up, with extra space under Hello.
 const MOBILE_LINE_Y = {
-  hello: 0.735,
-  friend: 0.825,
-  im: 0.925,
-  dani: 0.985,
+  hello: 0.705,
+  friend: 0.815,
+  im: 0.92,
+  dani: 0.98,
 } as const;
 
 export type TextLayoutMetrics = {
