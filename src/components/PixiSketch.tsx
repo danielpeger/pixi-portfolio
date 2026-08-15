@@ -112,7 +112,7 @@ export default function PixiSketch({
       const themeColors = (dark: boolean) => ({
         background: dark ? 0x000000 : 0xffffff,
         text: dark ? 0xffffff : 0x000000,
-        tertiary: dark ? 0x555559 : 0xc3c3c8,
+        secondary: 0x8a8a8e,
       });
       const initialTheme = themeColors(colorSchemeQuery?.matches ?? false);
       const dpr = window.devicePixelRatio || 1;
@@ -257,7 +257,7 @@ export default function PixiSketch({
       const handSize = handTargetSize;
       hand.anchor.set(0);
       hand.scale.set(handSize / hand.texture.height);
-      hand.tint = initialTheme.tertiary;
+      hand.tint = initialTheme.secondary;
       hand.alpha = 0;
       hand.x = 28;
       hand.y = 31;
@@ -270,7 +270,7 @@ export default function PixiSketch({
       const handLabel = new Text({
         text: "Tap to enable gyroscope",
         style: new TextStyle({
-          fill: initialTheme.tertiary,
+          fill: initialTheme.secondary,
           fontSize: 20,
           fontWeight: "400",
           fontFamily:
@@ -285,8 +285,8 @@ export default function PixiSketch({
         const colors = themeColors(dark);
         app.renderer.background.color = colors.background;
         textStyle.fill = colors.text;
-        handLabel.style.fill = colors.tertiary;
-        hand.tint = colors.tertiary;
+        handLabel.style.fill = colors.secondary;
+        hand.tint = colors.secondary;
       };
       handleColorSchemeChange = (event) => applyTheme(event.matches);
       colorSchemeQuery?.addEventListener("change", handleColorSchemeChange);
