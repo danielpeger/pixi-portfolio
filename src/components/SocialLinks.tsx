@@ -1,4 +1,4 @@
-import { SFEnvelope } from "sf-symbols-lib/monochrome/SFEnvelope";
+import { SFEnvelopeFill } from "sf-symbols-lib/monochrome/SFEnvelopeFill";
 import codepenLogomark from "@/assets/icons/codepen-logomark.svg?raw";
 import githubMark from "@/assets/icons/github-mark.svg?raw";
 import linkedinLogomark from "@/assets/icons/linkedin-logomark.svg?raw";
@@ -48,11 +48,15 @@ export default function SocialLinks() {
             href={link.href}
             className="flex w-full items-center gap-3 font-rubik"
           >
-            <span className="block size-5 shrink-0 overflow-clip text-tertiary-foreground">
+            <span className="block size-[20px] shrink-0 text-secondary-foreground">
               {"svg" in link ? (
                 <BrandIcon svg={link.svg} />
               ) : (
-                <SFEnvelope aria-hidden size="md" className="size-full" />
+                <SFEnvelopeFill
+                  aria-hidden
+                  size={20}
+                  className="size-full [&_path]:[fill-opacity:1]"
+                />
               )}
             </span>
             {link.title}
