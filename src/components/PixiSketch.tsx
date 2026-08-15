@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Application,
   Assets,
-  Color,
   Graphics,
   Sprite,
   Text,
@@ -38,28 +37,6 @@ type PixiSketchProps = {
 };
 
 const GYRO_DENIED_KEY = "gyroDenied";
-const TERTIARY_FOREGROUND_FALLBACK = 0xc3c3c8;
-
-function readCssVarAsPixiColor(variable: string, fallback: number): number {
-  const probe = document.createElement("span");
-  probe.style.color = `var(${variable})`;
-  document.documentElement.appendChild(probe);
-  const computed = getComputedStyle(probe).color;
-  probe.remove();
-  try {
-    return new Color(computed).toNumber();
-  } catch {
-    return fallback;
-  }
-}
-
-function readTertiaryForeground() {
-  const dark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
-  return readCssVarAsPixiColor(
-    "--tertiary-foreground",
-    dark ? 0x555559 : TERTIARY_FOREGROUND_FALLBACK,
-  );
-}
 
 function readGyroDenied() {
   try {
@@ -135,7 +112,7 @@ export default function PixiSketch({
       const themeColors = (dark: boolean) => ({
         background: dark ? 0x000000 : 0xffffff,
         text: dark ? 0xffffff : 0x000000,
-        tertiary: readTertiaryForeground(),
+        tertiary: dark ? 0x555559 : 0xc3c3c8,
       });
       const initialTheme = themeColors(colorSchemeQuery?.matches ?? false);
       const dpr = window.devicePixelRatio || 1;
