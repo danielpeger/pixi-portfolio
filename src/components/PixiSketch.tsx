@@ -10,6 +10,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
+  bodyCopyFontSize,
   computeDaniX,
   computeDaniY,
   computeFriendX,
@@ -142,11 +143,12 @@ export default function PixiSketch({
         }),
       ]);
       const fontsPromise = document.fonts
-        ? document.fonts
-            .load('400 140px "Jua"')
-            .catch(() => {
-              // Don't block the sketch if a font file fails to load.
-            })
+        ? Promise.all([
+            document.fonts.load('400 140px "Jua"'),
+            document.fonts.load('400 18px "Rubik"'),
+          ]).catch(() => {
+            // Don't block the sketch if a font file fails to load.
+          })
         : Promise.resolve();
 
       // resizeTo keeps Pixi's backing store tied to the container; our own
@@ -271,15 +273,17 @@ export default function PixiSketch({
         text: "Tap to enable gyroscope",
         style: new TextStyle({
           fill: initialTheme.secondary,
-          fontSize: 20,
+          fontSize: bodyCopyFontSize(window.innerWidth),
           fontWeight: "400",
-          fontFamily:
-            '"SF Pro Rounded", "SF Rounded", -apple-system, system-ui, sans-serif',
+          fontFamily: '"Rubik", system-ui, sans-serif',
         }),
       });
       handLabel.alpha = 0;
-      handLabel.x = hand.x + hand.width + 8;
-      handLabel.y = hand.y - 2 + (hand.height - handLabel.height) / 2;
+      const alignHandLabel = (yOffset = 0) => {
+        handLabel.x = hand.x + hand.width + 8;
+        handLabel.y = hand.y + yOffset + (hand.height - handLabel.height) / 2;
+      };
+      alignHandLabel(-2);
 
       const applyTheme = (dark: boolean) => {
         const colors = themeColors(dark);
@@ -364,8 +368,7 @@ export default function PixiSketch({
         hand.texture = tiltTexture;
         hand.scale.set(20 / hand.texture.height);
         handLabel.text = "Tilt phone to move ball";
-        handLabel.x = hand.x + hand.width + 8;
-        handLabel.y = hand.y + (hand.height - handLabel.height) / 2;
+        alignHandLabel();
         writeGyroDenied(false);
         return true;
       };
@@ -539,6 +542,8 @@ export default function PixiSketch({
       updateTextFontSizes = () => {
         cachedFontSize = scaleFontSize(window.innerWidth);
         textStyle.fontSize = cachedFontSize;
+        handLabel.style.fontSize = bodyCopyFontSize(window.innerWidth);
+        alignHandLabel(handMode === "prompt" ? -2 : 0);
         for (const body of textBodies) {
           textLocalBoundsCache.delete(body.sprite);
         }
