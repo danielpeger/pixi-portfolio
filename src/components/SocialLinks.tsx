@@ -48,7 +48,7 @@ export default function SocialLinks() {
             href={link.href}
             className="flex w-full items-center gap-3 font-rubik"
           >
-            <span className="block size-[20px] shrink-0 text-secondary-foreground">
+            <span className="block size-[20px] shrink-0 text-foreground">
               {"svg" in link ? (
                 <BrandIcon svg={link.svg} />
               ) : (
