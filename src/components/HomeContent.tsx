@@ -2,6 +2,7 @@ import { caseHeroes } from "@/assets/case-heroes";
 import About from "@/components/About";
 import AudioPlayer from "@/components/AudioPlayer";
 import Bookmarks from "@/components/Bookmarks";
+import SocialLinks from "@/components/SocialLinks";
 import PixiSketch from "@/components/PixiSketch";
 import SharedCaseImage from "@/components/SharedCaseImage";
 import ViewLink from "@/components/ViewLink";
@@ -234,6 +235,7 @@ export default function HomeContent({
       >
         <div className="px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-12 md:mb-16">
           <About />
+          <SocialLinks />
         </div>
       </section>
     </main>
