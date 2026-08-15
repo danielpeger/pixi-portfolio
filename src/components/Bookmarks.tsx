@@ -13,16 +13,6 @@ const BOOKMARKS: Bookmark[] = [
     href: "https://inkandswitch.com",
   },
   {
-    id: "tobias-ahlin",
-    title: "Tobias Ahlin",
-    href: "https://tobiasahlin.com",
-  },
-  {
-    id: "every-noise-at-once",
-    title: "Every Noise at Once",
-    href: "https://everynoise.com",
-  },
-  {
     id: "gapminder",
     title: "Gapminder",
     href: "https://www.gapminder.org",
@@ -43,11 +33,6 @@ const BOOKMARKS: Bookmark[] = [
     href: "https://practicaltypography.com",
   },
   {
-    id: "klim-foundry",
-    title: "Klim Foundry",
-    href: "https://klim.co.nz",
-  },
-  {
     id: "rybitten",
     title: "RYBitten",
     href: "https://rybitten.space",
@@ -61,6 +46,11 @@ const BOOKMARKS: Bookmark[] = [
     id: "animejs",
     title: "Anime.js",
     href: "https://animejs.com",
+  },
+  {
+    id: "every-noise-at-once",
+    title: "Every Noise at Once",
+    href: "https://everynoise.com",
   },
 ];
 
