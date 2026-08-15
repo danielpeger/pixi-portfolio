@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Application,
   Assets,
+  Color,
   Graphics,
   Sprite,
   Text,
@@ -37,6 +38,28 @@ type PixiSketchProps = {
 };
 
 const GYRO_DENIED_KEY = "gyroDenied";
+const TERTIARY_FOREGROUND_FALLBACK = 0xc3c3c8;
+
+function readCssVarAsPixiColor(variable: string, fallback: number): number {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${variable})`;
+  document.documentElement.appendChild(probe);
+  const computed = getComputedStyle(probe).color;
+  probe.remove();
+  try {
+    return new Color(computed).toNumber();
+  } catch {
+    return fallback;
+  }
+}
+
+function readTertiaryForeground() {
+  const dark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+  return readCssVarAsPixiColor(
+    "--tertiary-foreground",
+    dark ? 0x555559 : TERTIARY_FOREGROUND_FALLBACK,
+  );
+}
 
 function readGyroDenied() {
   try {
@@ -112,7 +135,7 @@ export default function PixiSketch({
       const themeColors = (dark: boolean) => ({
         background: dark ? 0x000000 : 0xffffff,
         text: dark ? 0xffffff : 0x000000,
-        tertiary: dark ? 0xdadadd : 0xc3c3c8,
+        tertiary: readTertiaryForeground(),
       });
       const initialTheme = themeColors(colorSchemeQuery?.matches ?? false);
       const dpr = window.devicePixelRatio || 1;
@@ -257,6 +280,7 @@ export default function PixiSketch({
       const handSize = handTargetSize;
       hand.anchor.set(0);
       hand.scale.set(handSize / hand.texture.height);
+      hand.tint = initialTheme.tertiary;
       hand.alpha = 0;
       hand.x = 28;
       hand.y = 31;
@@ -285,6 +309,7 @@ export default function PixiSketch({
         app.renderer.background.color = colors.background;
         textStyle.fill = colors.text;
         handLabel.style.fill = colors.tertiary;
+        hand.tint = colors.tertiary;
       };
       handleColorSchemeChange = (event) => applyTheme(event.matches);
       colorSchemeQuery?.addEventListener("change", handleColorSchemeChange);
