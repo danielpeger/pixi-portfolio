@@ -215,8 +215,8 @@ export default function HomeContent({
           </ViewLink>
         </div>
       </section>
-      <section className="w-full md:w-[calc(50%-36px)] md:order-2">
-        <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
+      <section className="w-full md:w-[calc(50%+36px)] md:order-1">
+        <div className="px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-12 md:mb-16">
           <h3 className="pb-4 text-xl xl:text-2xl">On repeat</h3>
           <AudioPlayer />
         </div>
