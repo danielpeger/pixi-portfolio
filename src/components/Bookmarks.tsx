@@ -13,11 +13,6 @@ const BOOKMARKS: Bookmark[] = [
     href: "https://inkandswitch.com",
   },
   {
-    id: "tobias-ahlin",
-    title: "Tobias Ahlin",
-    href: "https://tobiasahlin.com",
-  },
-  {
     id: "every-noise-at-once",
     title: "Every Noise at Once",
     href: "https://everynoise.com",
@@ -41,11 +36,6 @@ const BOOKMARKS: Bookmark[] = [
     id: "practical-typography",
     title: "Butterick's Practical Typography",
     href: "https://practicaltypography.com",
-  },
-  {
-    id: "klim-foundry",
-    title: "Klim Foundry",
-    href: "https://klim.co.nz",
   },
   {
     id: "rybitten",
