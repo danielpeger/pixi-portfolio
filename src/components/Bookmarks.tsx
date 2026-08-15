@@ -13,11 +13,6 @@ const BOOKMARKS: Bookmark[] = [
     href: "https://inkandswitch.com",
   },
   {
-    id: "every-noise-at-once",
-    title: "Every Noise at Once",
-    href: "https://everynoise.com",
-  },
-  {
     id: "gapminder",
     title: "Gapminder",
     href: "https://www.gapminder.org",
@@ -51,6 +46,11 @@ const BOOKMARKS: Bookmark[] = [
     id: "animejs",
     title: "Anime.js",
     href: "https://animejs.com",
+  },
+  {
+    id: "every-noise-at-once",
+    title: "Every Noise at Once",
+    href: "https://everynoise.com",
   },
 ];
 
