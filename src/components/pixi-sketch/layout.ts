@@ -4,6 +4,13 @@ function isMobileViewport(viewportWidth: number) {
   return viewportWidth < MD_BREAKPOINT;
 }
 
+/** Matches `main` body copy: text-lg md:text-base xl:text-xl. */
+export function bodyCopyFontSize(viewportWidth: number): number {
+  if (viewportWidth < MD_BREAKPOINT) return 18;
+  if (viewportWidth < 1280) return 16;
+  return 20;
+}
+
 export function scaleFontSize(viewportWidth: number): number {
   // Single-column layout: scales up to the md breakpoint.
   if (isMobileViewport(viewportWidth)) {
