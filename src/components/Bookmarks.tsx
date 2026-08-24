@@ -68,9 +68,9 @@ export default function Bookmarks() {
         >
           <a
             href={bookmark.href}
-            className="flex w-full cursor-pointer items-center justify-between gap-4 font-rubik"
+            className="group flex w-full cursor-pointer items-center justify-between gap-4 font-rubik"
           >
-            {bookmark.title}
+            <span className="group-hover:underline">{bookmark.title}</span>
             <span className="block size-5 shrink-0 overflow-clip text-tertiary-foreground">
               <SFLink aria-hidden size="md" className="size-full" />
             </span>

@@ -1,3 +1,4 @@
+import { SFDocumentFill } from "sf-symbols-lib/monochrome/SFDocumentFill";
 import { SFEnvelopeFill } from "sf-symbols-lib/monochrome/SFEnvelopeFill";
 import codepenLogomark from "@/assets/icons/codepen-logomark.svg?raw";
 import githubMark from "@/assets/icons/github-mark.svg?raw";
@@ -27,6 +28,12 @@ const LINKS = [
     title: "Mail",
     href: "mailto:pegerdaniel@gmail.com",
   },
+  {
+    id: "cv",
+    title: "Download CV",
+    href: "/DanielPeger.pdf",
+    newTab: true,
+  },
 ] as const;
 
 function BrandIcon({ svg }: { svg: string }) {
@@ -41,16 +48,30 @@ function BrandIcon({ svg }: { svg: string }) {
 
 export default function SocialLinks() {
   return (
-    <ul className="mt-8 space-y-3">
+    <ul className="flex flex-col gap-3">
       {LINKS.map((link) => (
-        <li key={link.id}>
+        <li
+          key={link.id}
+          className={
+            link.id === "cv" ? "mt-2 border-t border-separator pt-4" : undefined
+          }
+        >
           <a
             href={link.href}
-            className="flex w-full items-center gap-3 font-rubik"
+            className="group flex w-full items-center gap-3 font-rubik"
+            {...("newTab" in link
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
           >
             <span className="block size-[20px] shrink-0 text-foreground">
               {"svg" in link ? (
                 <BrandIcon svg={link.svg} />
+              ) : link.id === "cv" ? (
+                <SFDocumentFill
+                  aria-hidden
+                  size={20}
+                  className="size-full [&_path]:[fill-opacity:1]"
+                />
               ) : (
                 <SFEnvelopeFill
                   aria-hidden
@@ -59,7 +80,7 @@ export default function SocialLinks() {
                 />
               )}
             </span>
-            {link.title}
+            <span className="group-hover:underline">{link.title}</span>
           </a>
         </li>
       ))}

@@ -42,7 +42,7 @@ export default function HomeContent({
   };
 
   return (
-    <main className="flex flex-col flex-wrap content-between h-[5000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:order-2 text-lg md:text-base xl:text-xl">
+    <main className="flex flex-col flex-wrap content-between h-[10000px] md:before:content-[''] md:before:basis-full md:before:w-0 md:before:order-2 text-lg md:text-base xl:text-xl">
       <section className="w-full md:w-[calc(50%+36px)] md:order-1">
         <PixiSketch
           active={active}
@@ -52,15 +52,15 @@ export default function HomeContent({
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] md:mt-16 mb-12 md:mb-16">
           <p>
-            A design engineer who puts the <em>soft</em> in software. <br />{" "}
-            I've been in design since 2016, and I'm currently pursuing a
-            master’s in software engineering.
+            A design engineer who puts the <em>soft</em> in software. <br /> I'm
+            based in Budapest, Hungary. I've been in design since 2016, and I'm
+            currently pursuing a master’s in software engineering.
           </p>
         </div>
       </section>
       <section className="w-full md:w-[calc(50%-36px)] md:order-2">
         <div className="max-w-[612px] md:max-w-[540px] xl:max-w-[640px] mx-auto md:ml-0 px-8 md:pl-0 md:pr-[72px] mb-12 md:mb-16">
-          <h3 className="pb-4 text-xl xl:text-2xl">Places I've worked at</h3>
+          <h3 className="pb-4 text-xl xl:text-2xl">Places I've worked</h3>
           <ul>
             <li className="pb-2 mb-2 border-b border-separator flex justify-between">
               <a href="https://www.lastpass.com" className="hover:underline">
@@ -234,8 +234,27 @@ export default function HomeContent({
         aria-label="About"
       >
         <div className="px-8 md:px-[72px] max-w-[612px] xl:max-w-[712px] mx-auto md:mr-0 mb-12 md:mb-16">
+          <h3 className="pb-4 text-xl xl:text-2xl">About me</h3>
           <About />
-          <SocialLinks />
+          <div className="mt-8 flex items-center justify-between gap-6">
+            <SocialLinks />
+            <div className="flex shrink-0 items-end gap-3">
+              <img
+                src="/signiture.svg"
+                alt=""
+                width={73}
+                height={110}
+                className="-mr-[56px] h-36 w-auto dark:invert"
+              />
+              <img
+                src="/headshot.png"
+                alt="Daniel Péger"
+                width={372}
+                height={498}
+                className="h-55 w-auto"
+              />
+            </div>
+          </div>
         </div>
       </section>
     </main>
