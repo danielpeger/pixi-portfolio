@@ -354,7 +354,7 @@ export default function KinjaCase({
           Product Design Case Study
         </p>
         <h1 className="pb-4 text-2xl xl:text-3xl max-w-[700px]">
-          Making Kinja Navigation Coherent
+          Kinja navigation redesign for a multi-brand publishing network
         </h1>
         <p className="max-w-[640px] mb-10">
           In 2019 I was part of the team rethinking navigation on the{" "}
@@ -364,9 +364,10 @@ export default function KinjaCase({
           >
             Kinja platform
           </a>
-          . This is the story of how we used an iterative human-centered design
-          process to make our content structure clearer, improve users&apos;
-          confidence navigating, and increase engagement metrics.
+          , where readers kept getting lost between sites and sections. Through
+          two rounds of prototyping and moderated user testing, we raised task
+          success from 60% to 94.4% and shipped a navigation that measurably
+          improved engagement across the whole network.
         </p>
 
         <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6 pb-10 mb-10 border-b border-separator">
@@ -413,13 +414,13 @@ export default function KinjaCase({
           <CaseVideo src="/kinjanav/hero.mp4" bgColor="#b4cefa" />
         </CaseFigure>
 
-        {/* How it started */}
+        {/* Problem statement */}
         <section className="pb-12 mb-12 border-b border-separator">
           <p className="text-sm uppercase tracking-[0.08em] text-tertiary-foreground mb-3">
-            Context
+            The problem
           </p>
           <h2 className="pb-4 text-xl xl:text-2xl max-w-[720px]">
-            How it started
+            Readers couldn&apos;t tell where they were — or how to get back
           </h2>
           <div className="space-y-4 max-w-[720px]">
             <aside className="border-l-2 border-accent-border bg-accent-muted pl-5 pr-4 py-4 my-2">
@@ -526,26 +527,93 @@ export default function KinjaCase({
           </div>
         </section>
 
-        {/* The team */}
+        {/* Users and audience */}
         <section className="pb-12 mb-12 border-b border-separator">
           <p className="text-sm uppercase tracking-[0.08em] text-tertiary-foreground mb-3">
-            Team
+            Users &amp; audience
           </p>
-          <h2 className="pb-4 text-xl xl:text-2xl max-w-[720px]">The team</h2>
+          <h2 className="pb-4 text-xl xl:text-2xl max-w-[720px]">
+            Readers first — but editors and advertisers count too
+          </h2>
+          <div className="space-y-4 max-w-[720px]">
+            <p>
+              The primary audience was Kinja&apos;s readers: around 100 million
+              people a month, split roughly 50–50 between mobile and desktop.
+              Many of them bounce back and forth between front pages and
+              articles, and a dedicated group of cross-site readers jumps
+              between brands daily. Navigation also serves two secondary
+              audiences: authors publishing and managing posts, and advertisers
+              keeping an eye on their sponsored sites, sections and posts.
+            </p>
+            <p>
+              Before sketching anything, we listed what each audience needs
+              from navigation and ranked the goals by assumed importance,
+              grounding our assumptions in analytics data and earlier
+              qualitative research.
+            </p>
+            <UserGoalTable />
+          </div>
+        </section>
+
+        {/* Roles and responsibilities */}
+        <section className="pb-12 mb-12 border-b border-separator">
+          <p className="text-sm uppercase tracking-[0.08em] text-tertiary-foreground mb-3">
+            Role &amp; team
+          </p>
+          <h2 className="pb-4 text-xl xl:text-2xl max-w-[720px]">
+            Five designers, one engineer, two continents
+          </h2>
           <div className="space-y-4 max-w-[720px]">
             <p>
               The project was a team effort of 5 designers, 1 project manager
               and 1 engineer. There were no strict roles inside the design team,
               we shared research, ideation, prototyping and testing tasks as
-              much as possible. We were split between Europe and the US, so most
-              work was done asynchronously.
+              much as possible.
             </p>
             <p>
-              My role was designing one of our 3 candidate concepts, organizing
-              user interviews, conducting 6 of them, analyzing another 6,
-              fitting the winner concept into our design system, and helping
-              implement it in CSS.
+              My responsibilities were designing one of our 3 candidate
+              concepts, writing the task scenarios for testing, organizing user
+              interviews, conducting 6 of them, analyzing another 6, fitting
+              the winning concept into our design system, and helping implement
+              it in CSS.
             </p>
+          </div>
+        </section>
+
+        {/* Scope and constraints */}
+        <section className="pb-12 mb-12 border-b border-separator">
+          <p className="text-sm uppercase tracking-[0.08em] text-tertiary-foreground mb-3">
+            Scope &amp; constraints
+          </p>
+          <h2 className="pb-4 text-xl xl:text-2xl max-w-[720px]">
+            One navigation system for every brand, page type and screen
+          </h2>
+          <div className="space-y-4 max-w-[720px]">
+            <p>
+              The scope was the platform-wide navigation UI: the network nav,
+              the section nav and the site header, across homepages, section
+              pages and article pages. A few constraints shaped the work:
+            </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                The same components had to work for every G/O Media brand —
+                from Gizmodo to The Onion — while leaving room for each
+                brand&apos;s voice.
+              </li>
+              <li>
+                With a 50–50 mobile-desktop split, every concept had to be
+                designed and tested twice, once for each form factor.
+              </li>
+              <li>
+                We were split between Europe and the US, so most collaboration
+                happened asynchronously.
+              </li>
+              <li>
+                This was the first project at Kinja to rely heavily on
+                qualitative user testing, so we had to build the research
+                foundations — guidelines, screeners, scoring — from scratch.
+              </li>
+            </ul>
           </div>
         </section>
 
@@ -554,7 +622,9 @@ export default function KinjaCase({
           <p className="text-sm uppercase tracking-[0.08em] text-tertiary-foreground mb-3">
             Process
           </p>
-          <h2 className="pb-8 text-xl xl:text-2xl">What we did</h2>
+          <h2 className="pb-8 text-xl xl:text-2xl">
+            What we did, why, and what we learned
+          </h2>
 
           <div className="space-y-12 max-w-[720px]">
             {/* Step 1 */}
@@ -564,23 +634,23 @@ export default function KinjaCase({
               </div>
               <div className="space-y-4 min-w-0">
                 <h3 className="text-lg xl:text-xl font-medium">
-                  Understand and empathize
+                  Analytics revealed surprisingly heavy network-nav use
                 </h3>
                 <p>
-                  We looked at quantitative data from sources we already had. We
-                  were surprised to learn that the network nav has higher usage
-                  than section navs, especially on homepages, even though the
-                  network nav is hidden on small screens.
+                  We started with quantitative data we already had, to ground
+                  the redesign in evidence rather than opinions. The data
+                  surprised us: the network nav had higher usage than section
+                  navs, especially on homepages — even though the network nav
+                  is hidden on small screens.
                 </p>
                 <ClickData />
                 <p>
-                  The primary targets of this project were readers, but we
-                  wanted to introduce improvements for editors and advertisers
-                  as well. We continued by listing user goals and ranking them
-                  in order of assumed importance — trying to base our
-                  assumptions on data and earlier qualitative research.
+                  This told us that jumping between sites is a real reader
+                  behavior, not an edge case. Combined with the ranked user
+                  goals, it gave the whole team a shared, evidence-based
+                  picture of what the new navigation had to do before anyone
+                  drew a single sketch.
                 </p>
-                <UserGoalTable />
               </div>
             </div>
 
@@ -590,7 +660,9 @@ export default function KinjaCase({
                 2
               </div>
               <div className="space-y-4 min-w-0">
-                <h3 className="text-lg xl:text-xl font-medium">Ideate</h3>
+                <h3 className="text-lg xl:text-xl font-medium">
+                  Dot-voting left three concepts standing — and no consensus
+                </h3>
                 <p>
                   Then we did some competitor analysis, and shared our ideas in
                   a remote whiteboarding session. We sketched out a couple of
@@ -608,8 +680,8 @@ export default function KinjaCase({
                   </div>
                 </CaseFigure>
                 <p>
-                  Not one but three concepts got chosen. We wanted to compare
-                  them to get the best possible results.{" "}
+                  Not one but three concepts got chosen. Rather than argue from
+                  taste, we decided to let evidence pick the winner.{" "}
                   <Highlight>We realized we need qualitative testing</Highlight>{" "}
                   to get what goes on inside people&apos;s heads when they
                   navigate.
@@ -623,10 +695,14 @@ export default function KinjaCase({
                 3
               </div>
               <div className="space-y-4 min-w-0">
-                <h3 className="text-lg xl:text-xl font-medium">Prototype</h3>
+                <h3 className="text-lg xl:text-xl font-medium">
+                  Three concepts became six prototypes, built around five real
+                  tasks
+                </h3>
                 <p>
-                  I was tasked to write the task scenarios the comparison would
-                  be based on:
+                  To compare the concepts fairly, we needed all of them to
+                  support the same realistic scenarios. I was tasked to write
+                  the task scenarios the comparison would be based on:
                 </p>
                 <ol className="space-y-0 overflow-hidden rounded-[20px] border border-separator bg-accent-muted">
                   {[
@@ -696,7 +772,9 @@ export default function KinjaCase({
                 4
               </div>
               <div className="space-y-4 min-w-0">
-                <h3 className="text-lg xl:text-xl font-medium">Test</h3>
+                <h3 className="text-lg xl:text-xl font-medium">
+                  14 moderated tests showed us why people got lost
+                </h3>
                 <p>
                   This was the first time we heavily utilized qualitative user
                   testing at Kinja. We had to lay out the foundations. We agreed
@@ -745,7 +823,9 @@ export default function KinjaCase({
                 5
               </div>
               <div className="space-y-4 min-w-0">
-                <h3 className="text-lg xl:text-xl font-medium">Analyze</h3>
+                <h3 className="text-lg xl:text-xl font-medium">
+                  Familiar patterns worked, clever branding backfired
+                </h3>
                 <p>
                   We carefully watched back the recordings, rated tasks and took
                   notes. No interviewer analyzed their own interview. In the end
@@ -764,7 +844,10 @@ export default function KinjaCase({
                 6
               </div>
               <div className="space-y-4 min-w-0">
-                <h3 className="text-lg xl:text-xl font-medium">Do it again</h3>
+                <h3 className="text-lg xl:text-xl font-medium">
+                  A second round validated the merged design: 94.4% task
+                  success
+                </h3>
                 <p>
                   With the learnings in our hand we wanted to distill things
                   down to a single prototype and test it. We sketched together
@@ -789,7 +872,10 @@ export default function KinjaCase({
                 7
               </div>
               <div className="space-y-4 min-w-0">
-                <h3 className="text-lg xl:text-xl font-medium">Implement</h3>
+                <h3 className="text-lg xl:text-xl font-medium">
+                  We shipped in phases — and let an A/B test settle the last
+                  debate
+                </h3>
                 <p>
                   We broke development down to phases and I started working with
                   our engineer to build the layout and styles of the new
@@ -905,13 +991,13 @@ export default function KinjaCase({
           </div>
         </section>
 
-        {/* Outcomes */}
+        {/* Outcomes and lessons */}
         <section className="pb-4">
           <p className="text-sm uppercase tracking-[0.08em] text-tertiary-foreground mb-3">
-            Outcomes
+            Outcomes &amp; lessons
           </p>
           <h2 className="pb-4 text-xl xl:text-2xl max-w-[720px]">
-            Better experience, better metrics
+            Task success up from 60% to 94.4%, engagement up network-wide
           </h2>
           <div className="space-y-4 max-w-[720px]">
             <p>
@@ -948,6 +1034,35 @@ export default function KinjaCase({
               />
             </div>
             <p>We released the new nav for 100% of our users in April 2019.</p>
+            <h3 className="pt-6 text-lg xl:text-xl font-medium">
+              What I&apos;d take with me
+            </h3>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <Highlight>Test branding assumptions with real users.</Highlight>{" "}
+                Branded section headers read as ads until we overlaid content
+                on them — without testing, we would have shipped a component
+                readers ignored.
+              </li>
+              <li>
+                <Highlight>Data beats intuition when removing features.</Highlight>{" "}
+                We assumed the Explore page made the black network bar
+                redundant, but the A/B test proved avid cross-site readers
+                depend on it. We kept it.
+              </li>
+              <li>
+                <Highlight>Research foundations compound.</Highlight> The
+                guidelines, screener and scoring sheet we built for round one
+                made round two much faster to run — and left the team with a
+                repeatable testing process.
+              </li>
+              <li>
+                <Highlight>Next time, involve users even earlier.</Highlight>{" "}
+                Building and testing three full prototypes was expensive; rough
+                testing at the sketching stage might have narrowed the field
+                sooner.
+              </li>
+            </ul>
           </div>
         </section>
       </DeferCaseBody>
